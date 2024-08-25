@@ -45,3 +45,4 @@ For any questions, issues, or feedback, feel free to contact us via the methods 
 **Email:** [farzinns83@gmail.com](mailto:farzinns83@gmail.com)
 
 **Telegram:** [@Farzin_Ns83](https://t.me/Farzin_Ns83)
+**Telegram Channel:** [@Farzin_Ns83](https://t.me/flutterstuff)
