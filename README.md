@@ -42,7 +42,8 @@ We welcome your contributions and feedback! If you'd like to help improve this p
 
 For any questions, issues, or feedback, feel free to contact us via the methods below:
 
-**Email:** [farzinns83@gmail.com](mailto:farzinns83@gmail.com)
+- **Email:** [farzinns83@gmail.com](mailto:farzinns83@gmail.com)
 
-**Telegram:** [@Farzin_Ns83](https://t.me/Farzin_Ns83)
-**Telegram Channel:** [Flutter Stuff](https://t.me/flutterstuff)
+- **Telegram:** [@Farzin_Ns83](https://t.me/Farzin_Ns83)
+
+- **Telegram Channel:** [Flutter Stuff](https://t.me/flutterstuff)
