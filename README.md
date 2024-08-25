@@ -13,7 +13,7 @@
 To use this application, follow the steps below:
 
 1. **Download and Install**:
-   - Download the latest version of the application from [Download Link].
+   - Download the latest version of the application from [Download Link](https://github.com/FarzinNs83/DNS_Changer/releases/latest/download/DNS_Changer.exe).
    - Run the executable file and follow the installation instructions.
 
 2. **Run the Application**:
