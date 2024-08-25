@@ -1,3 +1,4 @@
+import 'package:dns_changer/service/dns_provider.dart';
 import 'package:dns_changer/theme/theme_provider.dart';
 import 'package:dns_changer/view/home_page.dart';
 import 'package:flutter/material.dart';
@@ -9,22 +10,31 @@ Future<void> main() async {
   await windowManager.ensureInitialized();
 
   WindowOptions windowOptions = const WindowOptions(
-      backgroundColor: Colors.transparent,
-      skipTaskbar: false,
-      windowButtonVisibility: false,
-      size: Size(400, 660),
-      center: true,
-      title: "DNS Changer");
+    backgroundColor: Colors.transparent,
+    size: Size(440, 660),
+    center: true,
+    title: "DNS Changer",
+    
+  );
 
   await windowManager.waitUntilReadyToShow(windowOptions).then((_) async {
-    await windowManager.setTitleBarStyle(TitleBarStyle.normal);
+    await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
     await windowManager.show();
     await windowManager.focus();
   });
-  runApp(ChangeNotifierProvider(
-    create: (context) => ThemeProvider(),
-    child: const MyApp(),
-  ));
+
+  ThemeProvider themeProvider = ThemeProvider(isDarkMode: false);
+  await themeProvider.loadTheme();
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => DNSProvider()),
+        ChangeNotifierProvider(create: (context) => themeProvider),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -32,10 +42,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const HomePage(),
-      theme: Provider.of<ThemeProvider>(context).themeData,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          theme: themeProvider.theme,
+          debugShowCheckedModeBanner: false,
+          home: const HomePage(),
+        );
+      },
     );
   }
 }
+
