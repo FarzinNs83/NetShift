@@ -44,6 +44,6 @@ For any questions, issues, or feedback, feel free to contact us via the methods 
 
 - **Email:** [farzinns83@gmail.com](mailto:farzinns83@gmail.com)
 
-- **Telegram:** [@Farzin_Ns83](https://t.me/Farzin_Ns83)
+- **Telegram:** [Feri](https://t.me/feri_ns83)
 
 - **Telegram Channel:** [Flutter Stuff](https://t.me/flutterstuff)
