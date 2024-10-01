@@ -13,7 +13,7 @@
 To use this application, follow the steps below:
 
 1. **Download and Install**:
-   - Download the latest version of the application from [Download Link].
+   - Download the latest version of the application from [Download Link](https://github.com/FarzinNs83/NetShift/releases/download/V.1.0.2/NetShift.exe).
    - Run the executable file and follow the installation instructions.
 
 2. **Run the Application**:
@@ -44,6 +44,6 @@ For any questions, issues, or feedback, feel free to contact us via the methods 
 
 - **Email:** [farzinns83@gmail.com](mailto:farzinns83@gmail.com)
 
-- **Telegram:** [@Farzin_Ns83](https://t.me/Farzin_Ns83)
+- **Telegram:** [Feri](https://t.me/feri_ns83)
 
 - **Telegram Channel:** [Flutter Stuff](https://t.me/flutterstuff)
