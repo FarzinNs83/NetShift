@@ -182,7 +182,7 @@ class _HomePageState extends State<HomePage> {
           }
         },
       ),
-      const SettingsPage(),
+       SettingsPage(),
     ];
   }
 

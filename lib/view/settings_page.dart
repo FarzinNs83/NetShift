@@ -1,66 +1,9 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dns_changer/theme/theme_provider.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert'; 
-import 'package:url_launcher/url_launcher.dart'; 
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
-
- 
-  Future<bool> _checkForUpdate() async {
-    const apiUrl =
-        'https://api.mrsf.ir/api/update/check/?id=1005'; 
-
-    try {
-      final response = await http.get(Uri.parse(apiUrl));
-
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        if (responseData['updateAvailable'] == true) {
-          return true;
-        }
-      }
-    } catch (e) {
-      debugPrint('Error checking for update: $e');
-    }
-
-    return false;
-  }
-
-
-  Future<String?> _getDownloadLink() async {
-    const apiUrl =
-        'https://api.mrsf.ir/api/update/download/?id=1005'; 
-
-    try {
-      final response = await http.get(Uri.parse(apiUrl));
-
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        return responseData['downloadUrl'];
-      }
-    } catch (e) {
-      debugPrint('Error getting download link: $e');
-    }
-
-    return null;
-  }
-
-  Future<void> _downloadUpdate() async {
-    final downloadLink = await _getDownloadLink();
-
-    if (downloadLink != null && downloadLink.isNotEmpty) {
-      if (await canLaunch(downloadLink)) {
-        await launch(downloadLink);
-      } else {
-        throw 'Could not launch $downloadLink';
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,40 +23,53 @@ class SettingsPage extends StatelessWidget {
           _buildSettingTile(
             context,
             title: 'Dark Mode',
-            icon: theme.brightness == Brightness.dark
-                ? Icons.nightlight_round
-                : Icons.wb_sunny,
-            iconColor: theme.brightness == Brightness.dark
-                ? Colors.yellow
-                : Colors.orange,
+            icon: theme.brightness == Brightness.dark ? Icons.nightlight_round : Icons.wb_sunny,
+            iconColor: theme.brightness == Brightness.dark ? Colors.yellow : Colors.orange,
             onTap: () {
               themeProvider.toggleTheme();
             },
           ),
           _buildSettingTile(
             context,
-            title: 'Check for Updates',
-            icon: Icons.system_update,
-            onTap: () async {
-              bool updateAvailable = await _checkForUpdate();
-              if (updateAvailable) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Update available! Click to download.'),
-                    action: SnackBarAction(
-                      label: 'Download',
-                      onPressed: _downloadUpdate,
-                    ),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('No updates available.')),
-                );
-              }
+            title: 'Version Info',
+            subtitle: '1.0.2',
+            icon: Icons.info_outline,
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('App version 1.0.2')),
+              );
             },
           ),
-          
+          _buildSettingTile(
+            context,
+            title: 'Contact Us',
+            icon: Icons.email_outlined,
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Contacs will be availabe soon.')),
+              );
+            },
+          ),
+          _buildSettingTile(
+            context,
+            title: 'Privacy Policy',
+            icon: Icons.lock_outline,
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Privacy policy link will be available soon.')),
+              );
+            },
+          ),
+          _buildSettingTile(
+            context,
+            title: 'Terms of Service',
+            icon: Icons.description_outlined,
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Terms of service link will be available soon.')),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -145,8 +101,7 @@ class SettingsPage extends StatelessWidget {
         ],
       ),
       child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         title: Text(
           title,
           style: TextStyle(
