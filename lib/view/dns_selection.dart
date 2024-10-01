@@ -1,15 +1,12 @@
-// lib/view/dns_selection.dart
-// ignore_for_file: library_private_types_in_public_api
-
+import 'package:dns_changer/service/dns_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:provider/provider.dart';
+import 'dart:io';
+import 'package:dns_changer/model/dns_model.dart';
 import 'package:dns_changer/component/bottom_sheet.dart';
 import 'package:dns_changer/component/dns_details.dart';
 import 'package:dns_changer/component/dropdown_dns.dart';
-import 'package:dns_changer/model/dns_model.dart';
-import 'package:dns_changer/service/dns_provider.dart';
 import 'package:dns_changer/service/dns_service.dart';
+import 'package:provider/provider.dart';
 
 class DnsSelection extends StatefulWidget {
   final void Function(DnsModel?) onSelect;
@@ -24,6 +21,7 @@ class DnsSelection extends StatefulWidget {
   });
 
   @override
+  // ignore: library_private_types_in_public_api
   _DnsSelectionState createState() => _DnsSelectionState();
 }
 
@@ -54,14 +52,21 @@ class _DnsSelectionState extends State<DnsSelection> {
   }
 
   Future<void> _loadPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    final dnsList = prefs.getStringList('dns_options') ?? [];
-    final selectedDnsName = prefs.getString('selected_dns');
+    final file = File('dns_options.txt');
 
-    dnsOptions = dnsList.map((dnsString) {
-      final parts = dnsString.split(',');
-      return DnsModel(name: parts[0], primary: parts[1], secondary: parts[2]);
-    }).toList();
+    if (file.existsSync()) {
+      final dnsList = await file.readAsLines();
+      dnsOptions = dnsList.map((dnsString) {
+        final parts = dnsString.split(',');
+        return DnsModel(name: parts[0], primary: parts[1], secondary: parts[2]);
+      }).toList();
+    }
+
+    final selectedDnsFile = File('selected_dns.txt');
+    String? selectedDnsName;
+    if (selectedDnsFile.existsSync()) {
+      selectedDnsName = await selectedDnsFile.readAsString();
+    }
 
     selectedDNS = dnsOptions.firstWhere(
       (dns) => dns.name == selectedDnsName,
@@ -85,24 +90,25 @@ class _DnsSelectionState extends State<DnsSelection> {
   }
 
   Future<void> _savePreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-        'dns_options',
-        dnsOptions
-            .map((dns) => '${dns.name},${dns.primary},${dns.secondary}')
-            .toList());
-    await prefs.setString('selected_dns', selectedDNS?.name ?? '');
+    final file = File('dns_options.txt');
+    final dnsListString = dnsOptions
+        .map((dns) => '${dns.name},${dns.primary},${dns.secondary}')
+        .join('\n');
+    await file.writeAsString(dnsListString);
+
+    final selectedFile = File('selected_dns.txt');
+    await selectedFile.writeAsString(selectedDNS?.name ?? '');
   }
 
   Future<void> _updatePingTime(String primaryDNS, String secondaryDNS) async {
+    if (!mounted) return;
+
     setState(() {
       _isLoadingPing = true;
     });
 
     final primaryPing = await dnsService.pingDNS(primaryDNS);
     final secondaryPing = await dnsService.pingDNS(secondaryDNS);
-
-    await Future.delayed(const Duration(seconds: 1));
 
     if (mounted) {
       setState(() {
@@ -118,8 +124,6 @@ class _DnsSelectionState extends State<DnsSelection> {
       setState(() {
         _isLoadingPing = true;
       });
-
-      await Future.delayed(const Duration(seconds: 1));
 
       await _updatePingTime(selectedDNS!.primary, selectedDNS!.secondary);
 
@@ -164,15 +168,12 @@ class _DnsSelectionState extends State<DnsSelection> {
   }
 
   Future<void> _removeDNSFromPreferences(DnsModel dns) async {
-    final prefs = await SharedPreferences.getInstance();
-    final dnsList = prefs.getStringList('dns_options') ?? [];
-    dnsList.removeWhere((dnsString) {
-      final parts = dnsString.split(',');
-      return parts[0] == dns.name &&
-          parts[1] == dns.primary &&
-          parts[2] == dns.secondary;
-    });
-    await prefs.setStringList('dns_options', dnsList);
+    dnsOptions.remove(dns);
+    final file = File('dns_options.txt');
+    final dnsListString = dnsOptions
+        .map((dns) => '${dns.name},${dns.primary},${dns.secondary}')
+        .join('\n');
+    await file.writeAsString(dnsListString);
   }
 
   @override

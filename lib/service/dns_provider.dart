@@ -1,5 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:dns_changer/model/dns_model.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DNSProvider with ChangeNotifier {
   DnsModel? _selectedDNS;
@@ -13,14 +14,14 @@ class DNSProvider with ChangeNotifier {
   void setDNS(DnsModel dns) {
     _selectedDNS = dns;
     _isDNSSet = true;
-    _isPowerOn = false; 
+    _isPowerOn = false;
     notifyListeners();
   }
 
   void clearDNS() {
     _selectedDNS = null;
     _isDNSSet = false;
-    _isPowerOn = false; 
+    _isPowerOn = false;
     notifyListeners();
   }
 
@@ -28,6 +29,7 @@ class DNSProvider with ChangeNotifier {
     if (_isDNSSet && _selectedDNS != null) {
       _isPowerOn = true;
       notifyListeners();
+      _savePowerOnState(_isPowerOn);
     }
   }
 
@@ -35,8 +37,29 @@ class DNSProvider with ChangeNotifier {
     if (_isPowerOn) {
       _isPowerOn = false;
       notifyListeners();
+      _savePowerOnState(_isPowerOn);
     }
   }
 
-  void toggleDNS() {}
+  void toggleDNS() {
+    _isPowerOn = !_isPowerOn;
+    notifyListeners();
+    _savePowerOnState(_isPowerOn);
+  }
+
+  void setPowerOn(bool value) {
+    _isPowerOn = value;
+    notifyListeners();
+    _savePowerOnState(_isPowerOn);
+  }
+
+  Future<void> _savePowerOnState(bool isPowerOn) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isPowerOn', isPowerOn);
+  }
+
+  Future<bool> _loadPowerOnState() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isPowerOn') ?? false;
+  }
 }

@@ -13,23 +13,23 @@ class DnsModel {
     this.secondaryPingTime,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'name': name,
-      'primary': primary,
-      'secondary': secondary,
-      'primaryPingTime': primaryPingTime,
-      'secondaryPingTime': secondaryPingTime,
-    };
-  }
+  // Map<String, dynamic> toMap() {
+  //   return {
+  //     'name': name,
+  //     'primary': primary,
+  //     'secondary': secondary,
+  //     'primaryPingTime': primaryPingTime,
+  //     'secondaryPingTime': secondaryPingTime,
+  //   };
+  // }
 
-  factory DnsModel.fromMap(Map<String, dynamic> map) {
-    return DnsModel(
-      name: map['name'],
-      primary: map['primary'],
-      secondary: map['secondary'],
-      primaryPingTime: map['primaryPingTime'],
-      secondaryPingTime: map['secondaryPingTime'],
-    );
-  }
+  // factory DnsModel.fromMap(Map<String, dynamic> map) {
+  //   return DnsModel(
+  //     name: map['name'],
+  //     primary: map['primary'],
+  //     secondary: map['secondary'],
+  //     primaryPingTime: map['primaryPingTime'],
+  //     secondaryPingTime: map['secondaryPingTime'],
+  //   );
+  // }
 }

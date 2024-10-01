@@ -7,12 +7,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 class DNSService {
   static const String wifiInterfaceName = 'Wi-Fi';
   static const String ethernetInterfaceName = 'Ethernet';
+  static const String nekoray = 'nekoray-tun';
 
   Future<void> setDNS(String primary, String secondary) async {
     try {
       await _setDNSForInterface(wifiInterfaceName, primary, secondary);
 
       await _setDNSForInterface(ethernetInterfaceName, primary, secondary);
+      await _setDNSForInterface(nekoray, primary, secondary);
     } catch (e) {
       if (kDebugMode) {
         print('Error while setting DNS: $e');
@@ -70,6 +72,7 @@ class DNSService {
       await _clearDNSForInterface(wifiInterfaceName);
 
       await _clearDNSForInterface(ethernetInterfaceName);
+      await _clearDNSForInterface(nekoray);
     } catch (e) {
       if (kDebugMode) {
         print('Error while clearing DNS: $e');

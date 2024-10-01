@@ -1,7 +1,5 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 import 'package:dns_changer/model/dns_model.dart';
 import 'package:dns_changer/service/dns_service.dart';
 
@@ -9,14 +7,14 @@ class FastestDNSPage extends StatefulWidget {
   final void Function(DnsModel) onApply;
   final void Function() onClear;
 
-  const FastestDNSPage(
-      {super.key, required this.onApply, required this.onClear});
+  const FastestDNSPage({super.key, required this.onApply, required this.onClear});
 
   @override
+  // ignore: library_private_types_in_public_api
   _FastestDNSPageState createState() => _FastestDNSPageState();
 }
 
-class _FastestDNSPageState extends State<FastestDNSPage> {
+class _FastestDNSPageState extends State<FastestDNSPage> with WidgetsBindingObserver {
   final dnsService = DNSService();
   List<DnsModel> dnsOptions = [];
   List<DnsModel> sortedDnsOptions = [];
@@ -25,47 +23,89 @@ class _FastestDNSPageState extends State<FastestDNSPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadDNSOptions();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _loadDNSOptions();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
   Future<void> _loadDNSOptions() async {
+    if (!mounted) return;
+
     setState(() {
       isLoading = true;
     });
 
-    final prefs = await SharedPreferences.getInstance();
-    final dnsList = prefs.getStringList('dns_options') ?? [];
-
-    dnsOptions = dnsList.map((dnsString) {
-      final parts = dnsString.split(',');
-      return DnsModel(name: parts[0], primary: parts[1], secondary: parts[2]);
-    }).toList();
-
-    if (dnsOptions.isNotEmpty) {
-      await _updatePingTimes();
-    }
-
-    if (mounted) {
+    final file = File('dns_options.txt');
+    if (!file.existsSync()) {
       setState(() {
         isLoading = false;
       });
+      return;
+    }
+
+    try {
+      final dnsList = await file.readAsLines();
+      final dnsOptions = dnsList
+          .map((dnsString) {
+            final parts = dnsString.split(',');
+            if (parts.length < 3) return null;
+            return DnsModel(
+                name: parts[0], primary: parts[1], secondary: parts[2]);
+          })
+          .whereType<DnsModel>()
+          .toList();
+
+      if (dnsOptions.isNotEmpty) {
+        await _updatePingTimes(dnsOptions);
+      } else {
+        setState(() {
+          this.dnsOptions = [];
+          isLoading = false;
+        });
+      }
+
+    } catch (e) {
+      print('Error loading DNS options: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
-  Future<void> _updatePingTimes() async {
+  Future<void> _updatePingTimes(List<DnsModel> dnsOptions) async {
     final pingTimes = <DnsModel, int>{};
 
     for (var dns in dnsOptions) {
-      final primaryPing = await dnsService.pingDNS(dns.primary);
-      final secondaryPing = await dnsService.pingDNS(dns.secondary);
-      final averagePing = ((primaryPing ?? 0) + (secondaryPing ?? 0)) / 2;
+      try {
+        final primaryPing = await dnsService.pingDNS(dns.primary);
+        final secondaryPing = await dnsService.pingDNS(dns.secondary);
+        final averagePing = ((primaryPing ?? 0) + (secondaryPing ?? 0)) / 2;
 
-      if (!mounted) return;
+        if (!mounted) return;
 
-      dns.primaryPingTime = primaryPing;
-      dns.secondaryPingTime = secondaryPing;
+        dns.primaryPingTime = primaryPing;
+        dns.secondaryPingTime = secondaryPing;
 
-      pingTimes[dns] = averagePing.toInt();
+        pingTimes[dns] = averagePing.toInt();
+      } catch (e) {
+        print('Error pinging DNS: $e');
+      }
     }
 
     if (mounted) {
@@ -124,8 +164,7 @@ class _FastestDNSPageState extends State<FastestDNSPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('DNS Update',
-            style: Theme.of(context).textTheme.headlineSmall),
+        title: Text('DNS Update', style: Theme.of(context).textTheme.headlineSmall),
         content: Text(message, style: Theme.of(context).textTheme.bodyMedium),
         actions: [
           TextButton(
@@ -148,16 +187,14 @@ class _FastestDNSPageState extends State<FastestDNSPage> {
         actions: [
           IconButton(
             icon: Icon(Icons.refresh, color: theme.iconTheme.color),
-            onPressed: _loadDNSOptions,
+            onPressed: _loadDNSOptions, 
           ),
         ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : sortedDnsOptions.isEmpty
-              ? Center(
-                  child: Text('No DNS options available',
-                      style: theme.textTheme.bodyMedium))
+              ? Center(child: Text('No DNS options available', style: theme.textTheme.bodyMedium))
               : ListView.builder(
                   itemCount: sortedDnsOptions.length,
                   itemBuilder: (context, index) {
@@ -165,8 +202,7 @@ class _FastestDNSPageState extends State<FastestDNSPage> {
                     return GestureDetector(
                       onTap: () => _applyDNS(dns),
                       child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 16),
+                        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: theme.brightness == Brightness.light
@@ -247,8 +283,7 @@ class _FastestDNSPageState extends State<FastestDNSPage> {
               onPressed: _applyFastestDNS,
               tooltip: 'Apply Fastest DNS',
               backgroundColor: theme.primaryColor,
-              child: Icon(Icons.speed,
-                  color: theme.floatingActionButtonTheme.foregroundColor),
+              child: Icon(Icons.speed, color: theme.floatingActionButtonTheme.foregroundColor),
             ),
           ),
           Positioned(
@@ -258,8 +293,7 @@ class _FastestDNSPageState extends State<FastestDNSPage> {
               onPressed: _clearDNS,
               tooltip: 'Clear DNS',
               backgroundColor: Colors.redAccent,
-              child: Icon(Icons.clear,
-                  color: theme.floatingActionButtonTheme.foregroundColor),
+              child: Icon(Icons.clear, color: theme.floatingActionButtonTheme.foregroundColor),
             ),
           ),
         ],

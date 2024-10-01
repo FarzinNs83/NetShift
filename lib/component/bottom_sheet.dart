@@ -1,4 +1,3 @@
-// dns_bottom_sheet.dart
 import 'package:flutter/material.dart';
 import 'package:dns_changer/model/dns_model.dart';
 

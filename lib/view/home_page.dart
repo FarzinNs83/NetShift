@@ -10,6 +10,7 @@ import 'package:dns_changer/theme/theme_provider.dart';
 import 'package:dns_changer/view/dns_selection.dart';
 import 'package:dns_changer/view/settings_page.dart';
 import 'package:dns_changer/view/fastest_dns.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,11 +22,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   final DNSService _dnsService = DNSService();
+  bool isConnecting = false;
 
   @override
   void initState() {
     super.initState();
     _loadSelectedDNS();
+    _loadPowerOnState().then((isPowerOn) {
+      Provider.of<DNSProvider>(context, listen: false).setPowerOn(isPowerOn);
+    });
   }
 
   Future<void> _loadSelectedDNS() async {
@@ -43,7 +48,26 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _savePowerOnState(bool isPowerOn) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isPowerOn', isPowerOn);
+  }
+
+  Future<bool> _loadPowerOnState() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isPowerOn') ?? false;
+  }
+
   Future<void> _toggleDNS() async {
+    if (isConnecting) {
+      _cancelConnecting();
+      return;
+    }
+
+    setState(() {
+      isConnecting = true;
+    });
+
     final dnsProvider = Provider.of<DNSProvider>(context, listen: false);
     if (dnsProvider.isDNSSet) {
       if (dnsProvider.isPowerOn) {
@@ -74,10 +98,45 @@ class _HomePageState extends State<HomePage> {
         showCustomSnackBar(context, 'No DNS set');
       }
     }
+    setState(() {
+      isConnecting = false;
+    });
   }
 
   Future<void> _clearDNSFromSystem() async {
     await _dnsService.clearDNSForAllInterfaces();
+  }
+
+  Future<void> _flushDNS() async {
+    setState(() {
+      isConnecting = true;
+    });
+
+    try {
+      await _dnsService.clearDNSForAllInterfaces();
+      if (mounted) {
+        showCustomSnackBar(context, 'DNS flushed successfully');
+        final dnsProvider = Provider.of<DNSProvider>(context, listen: false);
+        if (dnsProvider.isDNSSet) {
+          dnsProvider.deactivateDNS();
+          showCustomSnackBar(context, 'DNS deactivated');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        showCustomSnackBar(context, 'Failed to flush DNS');
+      }
+    } finally {
+      setState(() {
+        isConnecting = false;
+      });
+    }
+  }
+
+  void _cancelConnecting() {
+    setState(() {
+      isConnecting = false;
+    });
   }
 
   List<Widget> _pages() {
@@ -151,6 +210,9 @@ class _HomePageState extends State<HomePage> {
                     onTap: _toggleDNS,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      width: 120,
+                      height: 120,
                       decoration: BoxDecoration(
                         color: dnsProvider.isDNSSet
                             ? (dnsProvider.isPowerOn
@@ -172,12 +234,38 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.power_settings_new,
-                        color: Colors.white,
-                        size: 120,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder:
+                            (Widget child, Animation<double> animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
+                        },
+                        child: isConnecting
+                            ? const SizedBox(
+                                height: 60,
+                                width: 60,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 5,
+                                ),
+                              )
+                            : Icon(
+                                dnsProvider.isPowerOn
+                                    ? Icons.power_settings_new
+                                    : Icons.power_settings_new,
+                                color: Colors.white,
+                                size: 90,
+                              ),
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _flushDNS,
+                    child: const Text('Flush DNS'),
                   ),
                   const SizedBox(height: 20),
                   Card(
