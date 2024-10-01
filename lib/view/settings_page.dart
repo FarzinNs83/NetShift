@@ -10,7 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
-  // متد برای بررسی وجود به‌روزرسانی
+ 
   Future<bool> _checkForUpdate() async {
     const apiUrl =
         'https://api.mrsf.ir/api/update/check/?id=1005'; 
