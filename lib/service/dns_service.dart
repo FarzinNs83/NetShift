@@ -10,16 +10,9 @@ class DNSService {
   static const String nekoray = 'nekoray-tun';
 
   Future<void> setDNS(String primary, String secondary) async {
-    try {
-      await _setDNSForInterface(wifiInterfaceName, primary, secondary);
+    await _setDNSForInterface(wifiInterfaceName, primary, secondary);
 
-      await _setDNSForInterface(ethernetInterfaceName, primary, secondary);
-      await _setDNSForInterface(nekoray, primary, secondary);
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error while setting DNS: $e');
-      }
-    }
+    await _setDNSForInterface(ethernetInterfaceName, primary, secondary);
   }
 
   Future<void> _setDNSForInterface(

@@ -70,7 +70,7 @@ class CloseWindowButton extends StatelessWidget {
               ? Colors.greenAccent
               : Colors.white),
       onPressed: () {
-        appWindow.close();
+        appWindow.hide();
       },
       tooltip: 'Close',
     );

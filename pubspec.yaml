@@ -39,6 +39,7 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^3.0.0
+  msix: ^3.16.8
 
 flutter:
   uses-material-design: true
@@ -46,3 +47,13 @@ flutter:
   assets:
     - assets/images/tray.ico
 
+msix_config:
+  display_name: NetShift
+  publisher_display_name: Feri
+  publisher: Feri
+  identity_name: company.suite.flutterapp
+  languages: en
+  msix_version: 1.0.0.0
+  logo_path: C:\Users\SooX\Desktop\dns_changer\assets\images\tray.ico
+  capabilities: internetClient, DNS
+  

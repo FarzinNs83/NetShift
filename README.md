@@ -1,49 +1,94 @@
-# 🛠️ DNS Changer Application with Dart and Flutter
 
-## ✨ Key Features
+# 🛡️ NetShift: DNS Changer for Windows
 
-- **Quick and Easy DNS Change**: With a modern user interface, changing your system's DNS is simple and can be done in just a few clicks.
-- **Support for Multiple DNS Profiles**: Ability to create and manage different DNS profiles for diverse needs and requirements.
-- **Beautiful and User-Friendly Interface**: Designed with Flutter to provide an excellent and intuitive user experience.
-- **High Performance and Stability**: Optimized for stable and efficient performance on all versions of Windows 10 and above.
-- **Automatic and Manual Configuration**: Choose between automatic and manual settings to match various user needs.
+![NetShift Icon](./assets/images/tray.ico)
 
-## 🚀 Installation and Setup Guide
+**NetShift** is a user-friendly DNS management tool that helps you switch between different DNS settings with ease. Whether you're optimizing for speed, privacy, or security, NetShift gives you full control over your DNS preferences with a sleek interface and powerful features.
 
-To use this application, follow the steps below:
+---
 
-1. **Download and Install**:
-   - Download the latest version of the application from [Download Link](https://github.com/FarzinNs83/NetShift/releases/download/V.1.0.2/NetShift.exe).
-   - Run the executable file and follow the installation instructions.
+## 🏆 Features at a Glance
 
-2. **Run the Application**:
-   - After installation, launch the application.
-   - Use the application's interface to select and configure your desired DNS.
+- **Instant DNS Switching**  
+  Quickly change your DNS with just a click. No complex settings, just speed and simplicity.
 
-3. **Configuration and Usage**:
-   - Easily create new DNS profiles or edit existing ones.
-   - Save and apply changes using the application's options.
+- **Profile Management**  
+  Save multiple DNS profiles for different networks or scenarios, making it easier to switch depending on your needs.
 
-## 📋 Requirements
+- **Smooth & Modern Design**  
+  A clean and responsive interface powered by Flutter ensures a smooth user experience on all screen sizes.
 
-- **Windows**: The application has been tested on Windows 10 and above. For the best experience, it's recommended to use the latest version of Windows.
-- **Dart and Flutter**: If you plan to develop or customize the code, make sure Dart and Flutter are properly installed on your system.
+- **Auto & Manual Options**  
+  Automatically configure DNS or customize each DNS entry manually—perfect for advanced users.
 
-## 🤝 Contributing to the Project
+- **Optimized for Stability**  
+  Engineered for high performance on Windows 10 and above. Reliable, fast, and stable for everyday use.
 
-We welcome your contributions and feedback! If you'd like to help improve this project or have ideas for new features, please refer to the Telegram.
+---
 
-**Contribution Steps**:
-1. **Fork the Repository**: Fork the project and create a new branch for your changes.
-2. **Submit a Pull Request**: Submit your changes through a pull request.
-3. **Report Issues and Suggestions**: If you encounter any issues or have suggestions for improvements, please report them via Telegram.
+## 🖥️ Application Screenshots
 
-## 📧 Contact
+Take a look at how easy it is to manage your DNS settings with NetShift:
 
-For any questions, issues, or feedback, feel free to contact us via the methods below:
+![NetShift Main Screen](https://path-to-your-screenshot1.png)  
+_Easily switch between DNS profiles with a clean interface._
 
-- **Email:** [farzinns83@gmail.com](mailto:farzinns83@gmail.com)
+![NetShift DNS Management](https://path-to-your-screenshot2.png)  
+_Manage multiple DNS profiles seamlessly._
 
-- **Telegram:** [Feri](https://t.me/feri_ns83)
+---
 
-- **Telegram Channel:** [Flutter Stuff](https://t.me/flutterstuff)
+## ⚡ Getting Started
+
+1. **Download NetShift**  
+   Grab the latest version of NetShift by [clicking here](https://github.com/FarzinNs83/NetShift/releases/download/V.1.0.3/NetShift.exe).
+
+2. **Installation**  
+   Run the installer and follow the setup instructions.
+
+3. **Launch & Configure**  
+   After installation, launch the app to create and manage DNS profiles. Switch between profiles instantly and easily configure DNS for your system.
+
+---
+
+## 🔧 System Requirements
+
+- **Operating System**:  
+  Compatible with Windows 10 and newer.
+
+- **Development**:  
+  If you're interested in customizing or contributing, make sure Dart and Flutter are set up on your system.
+
+---
+
+## 🛠️ Contributing to NetShift
+
+Want to help make NetShift even better? Contributions are always welcome!
+
+### How to Contribute:
+1. **Fork the Project**  
+   Clone your fork locally to work on it.
+
+2. **Create a New Branch**  
+   Implement your changes on a new branch.
+
+3. **Submit a Pull Request**  
+   When you're ready, submit a pull request for review.
+
+Have suggestions, feature requests, or bug reports? Join our community on [Telegram](https://t.me/flutterstuff) or send feedback directly to the project maintainer.
+
+---
+
+## 📞 Contact Us
+
+Need help or have any questions? We're here to assist:
+
+- **Email**: [farzinns83@gmail.com](mailto:farzinns83@gmail.com)
+- **Telegram**: [Feri](https://t.me/feri_ns83)
+- **Community Channel**: [Flutter Stuff](https://t.me/flutterstuff)
+
+---
+
+## 📸 Showcase Your Setup!
+
+We’d love to see how you're using NetShift! Share your setup or custom DNS profiles on our Telegram channel, and let’s build a better experience together.

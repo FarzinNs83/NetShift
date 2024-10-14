@@ -113,20 +113,17 @@ class _FastestDNSPageState extends State<FastestDNSPage>
       setState(() {
         sortedDnsOptions = pingTimes.keys.toList()
           ..sort((a, b) {
-            final aPing = pingTimes[a]!;
-            final bPing = pingTimes[b]!;
-
-            if ((a.primaryPingTime == null && a.secondaryPingTime == null) &&
-                (b.primaryPingTime == null && b.secondaryPingTime == null)) {
+            if ((a.primaryPingTime == null || a.secondaryPingTime == null) &&
+                (b.primaryPingTime == null || b.secondaryPingTime == null)) {
               return 0;
-            } else if (a.primaryPingTime == null &&
+            } else if (a.primaryPingTime == null ||
                 a.secondaryPingTime == null) {
               return 1;
-            } else if (b.primaryPingTime == null &&
+            } else if (b.primaryPingTime == null ||
                 b.secondaryPingTime == null) {
               return -1;
             } else {
-              return aPing.compareTo(bPing);
+              return pingTimes[a]!.compareTo(pingTimes[b]!);
             }
           });
       });

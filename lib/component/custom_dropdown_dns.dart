@@ -152,6 +152,6 @@ class DNSSelector extends StatelessWidget {
               ),
             ],
           ),
-        ));
+        ),);
   }
 }
