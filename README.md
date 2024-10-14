@@ -1,7 +1,7 @@
 # 🛡️ NetShift: DNS Changer for Windows
 
 <p align="center">
-  <img src="./assets/images/tray.ico" alt="NetShift Icon" width="200" />
+  <img src="./assets/images/NetShift.png" alt="NetShift Icon" width="200" />
 </p>
 
 **NetShift** is a user-friendly DNS management tool that helps you switch between different DNS settings with ease. Whether you're optimizing for speed, privacy, or security, NetShift gives you full control over your DNS preferences with a sleek interface and powerful features.
