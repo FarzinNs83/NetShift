@@ -1,7 +1,8 @@
-
 # 🛡️ NetShift: DNS Changer for Windows
 
-![NetShift Icon](./assets/images/tray.ico)
+<p align="center">
+  <img src="./assets/images/tray.ico" alt="NetShift Icon" width="200" />
+</p>
 
 **NetShift** is a user-friendly DNS management tool that helps you switch between different DNS settings with ease. Whether you're optimizing for speed, privacy, or security, NetShift gives you full control over your DNS preferences with a sleek interface and powerful features.
 
@@ -28,13 +29,37 @@
 
 ## 🖥️ Application Screenshots
 
-Take a look at how easy it is to manage your DNS settings with NetShift:
+### Main Screen and Profile Management
 
-![NetShift Main Screen](https://path-to-your-screenshot1.png)  
-_Easily switch between DNS profiles with a clean interface._
+<p align="center">
+  <img src="./assets/images/NetShift01.png" alt="NetShift Main Screen" width="300" />  
+  <img src="./assets/images/NetShift02.png" alt="NetShift Profile Management" width="300" />  
+  <img src="./assets/images/NetShift03.png" alt="NetShift DNS Profiles" width="300" />  
+</p>
 
-![NetShift DNS Management](https://path-to-your-screenshot2.png)  
-_Manage multiple DNS profiles seamlessly._
+<p align="center">
+  <img src="./assets/images/NetShift04.png" alt="NetShift Fastest DNS" width="300" />  
+  <img src="./assets/images/NetShift05.png" alt="NetShift Settings" width="300" />
+</p>
+
+_Easily manage DNS settings with a clean and intuitive interface._
+
+---
+
+### Advanced DNS and Settings Management
+
+<p align="center">
+  <img src="./assets/images/NetShift06.png" alt="NetShift Advanced Screen" width="300" />  
+  <img src="./assets/images/NetShift07.png" alt="NetShift Advanced DNS Management" width="300" />  
+  <img src="./assets/images/NetShift08.png" alt="NetShift DNS List" width="300" />  
+</p>
+
+<p align="center">
+  <img src="./assets/images/NetShift09.png" alt="NetShift Fast DNS Selection" width="300" />  
+  <img src="./assets/images/NetShift10.png" alt="NetShift Settings Menu" width="300" />
+</p>
+
+_Customize DNS settings manually or use automatic configuration for faster results._
 
 ---
 
