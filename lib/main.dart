@@ -9,30 +9,30 @@ import 'package:windows_single_instance/windows_single_instance.dart';
 
 Future<void> main(List<String> arguments) async {
   WidgetsFlutterBinding.ensureInitialized();
-  await windowManager.ensureInitialized();
+  // await windowManager.ensureInitialized();
 
-  WindowOptions windowOptions = const WindowOptions(
-    backgroundColor: Colors.transparent,
-    size: Size(440, 660),
-    center: true,
-    title: "DNS Changer",
-  );
+  // WindowOptions windowOptions = const WindowOptions(
+  //   backgroundColor: Colors.transparent,
+  //   size: Size(440, 660),
+  //   center: true,
+  //   title: "DNS Changer",
+  // );
 
-  await windowManager.waitUntilReadyToShow(windowOptions).then((_) async {
-    await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
-    await windowManager.show();
-    await windowManager.focus();
-  });
+  // await windowManager.waitUntilReadyToShow(windowOptions).then((_) async {
+  //   await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+  //   await windowManager.show();
+  //   await windowManager.focus();
+  // });
 
   ThemeProvider themeProvider = ThemeProvider(isDarkMode: false);
   await themeProvider.loadTheme();
 
-  await WindowsSingleInstance.ensureSingleInstance(
-    arguments,
-    "NetShift_instance_checker",
-    // ignore: avoid_print
-    onSecondWindow: (arguments) => print(arguments),
-  );
+  // await WindowsSingleInstance.ensureSingleInstance(
+  //   arguments,
+  //   "NetShift_instance_checker",
+  //   // ignore: avoid_print
+  //   onSecondWindow: (arguments) => print(arguments),
+  // );
 
   await initTray();
 
