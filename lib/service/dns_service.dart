@@ -1,5 +1,3 @@
-// ignore_for_file: unused_element
-
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,12 +8,16 @@ class DNSService {
   static const String nekoray = 'nekoray-tun';
 
   Future<void> setDNS(String primary, String secondary) async {
-    await _setDNSForInterface(wifiInterfaceName, primary, secondary);
-
-    await _setDNSForInterface(ethernetInterfaceName, primary, secondary);
+    if (Platform.isWindows) {
+      await _setDNSForWindowsInterface(wifiInterfaceName, primary, secondary);
+      await _setDNSForWindowsInterface(ethernetInterfaceName, primary, secondary);
+    } else if (Platform.isMacOS) {
+      await _setDNSForMacInterface(wifiInterfaceName, primary, secondary);
+      await _setDNSForMacInterface(ethernetInterfaceName, primary, secondary);
+    }
   }
 
-  Future<void> _setDNSForInterface(
+  Future<void> _setDNSForWindowsInterface(
       String interfaceName, String primary, String secondary) async {
     try {
       final resultPrimary = await Process.run(
@@ -60,12 +62,36 @@ class DNSService {
     }
   }
 
+  Future<void> _setDNSForMacInterface(
+      String interfaceName, String primary, String secondary) async {
+    try {
+      final resultPrimary = await Process.run(
+        'networksetup',
+        ['-setdnsservers', interfaceName, primary, secondary],
+      );
+      if (resultPrimary.exitCode != 0) {
+        throw Exception(
+            'Failed to set DNS on $interfaceName: ${resultPrimary.stderr}');
+      }
+
+      await _saveSelectedDNS(primary, secondary);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error while setting DNS on $interfaceName: $e');
+      }
+    }
+  }
+
   Future<void> clearDNSForAllInterfaces() async {
     try {
-      await _clearDNSForInterface(wifiInterfaceName);
-
-      await _clearDNSForInterface(ethernetInterfaceName);
-      await _clearDNSForInterface(nekoray);
+      if (Platform.isWindows) {
+        await _clearDNSForWindowsInterface(wifiInterfaceName);
+        await _clearDNSForWindowsInterface(ethernetInterfaceName);
+        await _clearDNSForWindowsInterface(nekoray);
+      } else if (Platform.isMacOS) {
+        await _clearDNSForMacInterface(wifiInterfaceName);
+        await _clearDNSForMacInterface(ethernetInterfaceName);
+      }
     } catch (e) {
       if (kDebugMode) {
         print('Error while clearing DNS: $e');
@@ -73,11 +99,28 @@ class DNSService {
     }
   }
 
-  Future<void> _clearDNSForInterface(String interfaceName) async {
+  Future<void> _clearDNSForWindowsInterface(String interfaceName) async {
     try {
       final result = await Process.run(
         'netsh',
         ['interface', 'ipv4', 'set', 'dns', 'name="$interfaceName"', 'dhcp'],
+      );
+      if (result.exitCode != 0) {
+        throw Exception(
+            'Failed to clear DNS on $interfaceName: ${result.stderr}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error while clearing DNS on $interfaceName: $e');
+      }
+    }
+  }
+
+  Future<void> _clearDNSForMacInterface(String interfaceName) async {
+    try {
+      final result = await Process.run(
+        'networksetup',
+        ['-setdnsservers', interfaceName, 'Empty'],
       );
       if (result.exitCode != 0) {
         throw Exception(
