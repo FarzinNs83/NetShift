@@ -1,0 +1,28 @@
+{
+    "fetching_data" : "در حال بارگذاری داده‌ها",
+    "home_title": "نِت‌شیفت",
+    "timer" : "00:00:00",
+    "upload" : "آپلود",
+    "address" : "آدرس",
+    "download" : "دانلود",
+    "mb" : "مگابایت",
+    "ip" : "آی‌پی",
+    "dns_page_title" : "انتخاب دی‌ان‌اس",
+    "ping" : "پینگ",
+    "dns_ping_title" : "نتیجه پینگ دی‌ان‌اس",
+    "apply" : "اعمال",
+    "average_ping_timeout" : "میانگین پینگ: -1 میلی‌ثانیه",
+    "general" : "عمومی",
+    "dark_mode" : "حالت تاریک",
+    "dark_mode_sub" : "فعال‌سازی تم تاریک",
+    "language" : "زبان",
+    "language_sub" : "انتخاب زبان اپلیکیشن",
+    "split_tunneling" : "تونل شکسته",
+    "split_tunneling_sub" : "فیلتر کردن اپلیکیشن‌ها",
+    "about" : "درباره",
+    "app_version" : "نسخه اپلیکیشن",
+    "build_version" : "نسخه 1.0.0",
+    "support" : "پشتیبانی",
+    "support_sub" : "تماس با تیم پشتیبانی"
+    
+}

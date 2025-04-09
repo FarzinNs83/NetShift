@@ -1,0 +1,94 @@
+{
+    "dns_providers": [
+      {
+        "name": "NetShift DNS",
+        "primaryDNS": "178.22.122.100",
+        "secondaryDNS": "78.157.42.100"
+      },
+      {
+        "name": "Electro DNS",
+        "primaryDNS": "78.157.42.100",
+        "secondaryDNS": "78.157.42.101"
+      },
+      {
+        "name": "Radar DNS",
+        "primaryDNS": "10.202.10.10",
+        "secondaryDNS": "10.202.10.11"
+      },
+      {
+        "name": "Google DNS",
+        "primaryDNS": "8.8.8.8",
+        "secondaryDNS": "8.8.4.4"
+      },
+      {
+        "name": "CloudFlare DNS",
+        "primaryDNS": "1.1.1.1",
+        "secondaryDNS": "1.0.0.1"
+      },
+      {
+        "name": "Open DNS",
+        "primaryDNS": "208.67.222.222",
+        "secondaryDNS": "208.67.220.220"
+      },
+      {
+        "name": "Quad9 DNS (AD)",
+        "primaryDNS": "9.9.9.9",
+        "secondaryDNS": "149.112.112.112"
+      },
+      {
+        "name": "Shecan DNS",
+        "primaryDNS": "178.22.122.100",
+        "secondaryDNS": "185.51.200.2"
+      },
+      {
+        "name": "403 DNS",
+        "primaryDNS": "10.202.10.202",
+        "secondaryDNS": "10.202.10.102"
+      },
+      {
+        "name": "Begzar DNS",
+        "primaryDNS": "185.55.226.26",
+        "secondaryDNS": "185.55.226.25"
+      },
+      {
+        "name": "Shelter DNS",
+        "primaryDNS": "78.157.60.6",
+        "secondaryDNS": "78.157.60.242"
+      },
+      {
+        "name": "Shatel DNS",
+        "primaryDNS": "85.15.1.14",
+        "secondaryDNS": "85.15.1.15"
+      },
+      {
+        "name": "Pishgaman DNS",
+        "primaryDNS": "5.202.100.100",
+        "secondaryDNS": "5.202.100.101"
+      },
+      {
+        "name": "Beshkan DNS",
+        "primaryDNS": "181.41.194.177",
+        "secondaryDNS": "181.41.194.186"
+      },
+      {
+        "name": "Level3 DNS",
+        "primaryDNS": "209.244.0.3",
+        "secondaryDNS": "209.244.0.4"
+      },
+      {
+        "name": "Comodo Secure DNS",
+        "primaryDNS": "8.26.56.26",
+        "secondaryDNS": "8.20.247.20"
+      },
+      {
+        "name": "Verisign DNS",
+        "primaryDNS": "64.6.64.6",
+        "secondaryDNS": "64.6.65.6"
+      },
+      {
+        "name": "OpenNIC DNS",
+        "primaryDNS": "46.151.208.154",
+        "secondaryDNS": "128.199.248.105"
+      }
+    ]
+  }
