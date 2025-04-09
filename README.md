@@ -95,8 +95,6 @@ Want to help make NetShift even better? Contributions are always welcome!
 3. **Submit a Pull Request**  
    When you're ready, submit a pull request for review.
 
-4. **Read main.dart file comment for more info**
-
 Have suggestions, feature requests, or bug reports? Join our community on [Telegram](https://t.me/flutterstuff) or send feedback directly to the project maintainer.
 
 ---
