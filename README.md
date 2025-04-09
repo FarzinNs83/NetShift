@@ -61,7 +61,8 @@ _Customize DNS settings manually or use automatic configuration for faster resul
 ## ⚡ Getting Started
 
 1. **Download NetShift**  
-   Grab the latest version of NetShift by [clicking here](https://github.com/FarzinNs83/NetShift/releases/download/V.1.0.3/NetShift.exe).
+   Grab the latest version of NetShift Android by [clicking here](https://github.com/FarzinNs83/NetShift/releases/download/V.1.0.4/NetShift-Universal-Android.apk).
+   Grab the latest version of NetShift Windows by [clicking here](https://github.com/FarzinNs83/NetShift/releases/download/V.1.0.4/NetShift.exe).
 
 2. **Installation**  
    Run the installer and follow the setup instructions.

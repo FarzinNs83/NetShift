@@ -58,7 +58,8 @@ _تنظیمات DNS را به صورت دستی شخصی‌سازی کنید ی�
 ## ⚡ شروع به کار
 
 1. **دانلود NetShift**  
-   آخرین نسخه NetShift را از [اینجا دانلود کنید](https://github.com/FarzinNs83/NetShift/releases/download/V.1.0.3/NetShift.exe).
+   آخرین نسخه NetShift Android را از [اینجا دانلود کنید](https://github.com/FarzinNs83/NetShift/releases/download/V.1.0.4/NetShift-Universal-Android.apk).
+   آخرین نسخه NetShift Windows را از [اینجا دانلود کنید](https://github.com/FarzinNs83/NetShift/releases/download/V.1.0.4/NetShift.exe).
 
 2. **نصب**  
    نصب‌کننده را اجرا کرده و دستورالعمل‌های نصب را دنبال کنید.
