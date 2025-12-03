@@ -18,8 +18,10 @@ class BlockedAppsController extends GetxController {
 
   Future<void> installedApps() async {
     try {
-      final result =
-          await InstalledApps.getInstalledApps(!isSystemApp.value, true);
+      final result = await InstalledApps.getInstalledApps(
+        excludeSystemApps: !isSystemApp.value,
+        withIcon: true,
+      );
       apps.addAll(result);
       apps.sort((a, b) => a.name.compareTo(b.name));
     } catch (e) {

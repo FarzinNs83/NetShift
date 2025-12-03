@@ -19,20 +19,20 @@ class MainWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DoubleTapToExit(
-      child: SafeArea(
-        child: Scaffold(
-          // WINDOWS
-          appBar: Platform.isWindows
-              ? const PreferredSize(
-                  preferredSize: Size.fromHeight(60),
-                  child: WindowsTitleBarBox(),
-                )
-              : null,
-          backgroundColor: AppColors.mainWrapperBackground,
-          body: Obx(
-            () => mainWrapperController.selectedPage,
-          ),
-          bottomNavigationBar: Padding(
+      child: Scaffold(
+        // WINDOWS
+        appBar: Platform.isWindows
+            ? const PreferredSize(
+                preferredSize: Size.fromHeight(60),
+                child: WindowsTitleBarBox(),
+              )
+            : null,
+        backgroundColor: AppColors.mainWrapperBackground,
+        body: Obx(
+          () => mainWrapperController.selectedPage,
+        ),
+        bottomNavigationBar: SafeArea(
+          child: Padding(
             padding: const EdgeInsets.all(14),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
