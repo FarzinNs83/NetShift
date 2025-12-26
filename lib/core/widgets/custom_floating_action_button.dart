@@ -19,9 +19,9 @@ class CustomFloatingActionButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
-        padding: const EdgeInsets.all(18),
+        padding: EdgeInsets.all(18),
         elevation: 2,
-        minimumSize: const Size(60, 60),
+        minimumSize: Size(60, 60),
       ),
       onPressed: onTap,
       child: SvgPicture.asset(path),
