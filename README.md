@@ -183,7 +183,7 @@ Need help or have any questions? We're here to assist:
 ## Contributors
 
 - [Jamalianpour](https://github.com/Jamalianpour)
-  Responsible for adding full macOS support and performing a comprehensive refactor, including code cleanup, structural improvements, and cross-platform compatibility enhancements.
+  Responsible for adding full macOS support and refactor.
 
 ---
 
