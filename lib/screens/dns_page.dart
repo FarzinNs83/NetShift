@@ -216,13 +216,6 @@ class DNSPage extends StatelessWidget {
           subtitle: "Configure your own DNS servers",
           onTap: () => _handleAddDns(context),
         ),
-        const SizedBox(height: 16),
-        ActionCard(
-          icon: Icons.dns_rounded,
-          title: "Browse DNS Providers",
-          subtitle: "Choose from popular DNS services",
-          onTap: () => _handleDnsSelection(context),
-        ),
       ],
     );
   }
