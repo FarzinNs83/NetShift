@@ -57,6 +57,10 @@ class NetshiftEngineController extends GetxController {
       interfaceNameForWindows();
       loadInterfaceName();
     }
+    if (Platform.isMacOS) {
+      interfaceNameForMacOS();
+      loadInterfaceName();
+    }
   }
 
   Future<void> prepareDns() async {
@@ -252,6 +256,169 @@ class NetshiftEngineController extends GetxController {
   }
 
   // FOR WINDOWS END
+
+  // FOR MACOS START
+  Future<void> startDnsForMacOS() async {
+    isLoading.value = true;
+    isActive.value = true;
+    saveConnectButtonStatus();
+    try {
+      // Get the active network service name
+      String networkService = interfaceName.value.contains('Select Interface')
+          ? await _getMacOSNetworkService()
+          : interfaceName.value;
+      if (networkService.isEmpty) {
+        log('No active network service found');
+        isLoading.value = false;
+        isActive.value = false;
+        return;
+      }
+
+      // Set DNS servers using osascript with administrator privileges
+      final result = await Process.run(
+        'osascript',
+        [
+          '-e',
+          'do shell script "networksetup -setdnsservers \'$networkService\' ${selectedDns.value.primaryDNS} ${selectedDns.value.secondaryDNS}" with administrator privileges'
+        ],
+      );
+
+      if (result.exitCode != 0) {
+        log('Error setting DNS: ${result.stderr}');
+        isActive.value = false;
+        saveConnectButtonStatus();
+      } else {
+        log('DNS configured successfully on $networkService');
+      }
+    } catch (e) {
+      log('Error configuring DNS: $e');
+      isActive.value = false;
+      saveConnectButtonStatus();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> stopDnsForMacOS() async {
+    isActive.value = false;
+    saveConnectButtonStatus();
+    try {
+      String networkService = interfaceName.value.contains('Select Interface')
+          ? await _getMacOSNetworkService()
+          : interfaceName.value;
+      if (networkService.isEmpty) {
+        log('No active network service found');
+        return;
+      }
+
+      // Reset DNS to empty (DHCP) using osascript with administrator privileges
+      final resetResult = await Process.run(
+        'osascript',
+        [
+          '-e',
+          'do shell script "networksetup -setdnsservers \'$networkService\' Empty" with administrator privileges'
+        ],
+      );
+
+      if (resetResult.exitCode != 0) {
+        log('Error resetting DNS: ${resetResult.stderr}');
+      } else {
+        log('DNS reset to default on $networkService');
+      }
+    } catch (e) {
+      log('Error disabling DNS: $e');
+    }
+  }
+
+  Future<void> flushDnsForMacOS() async {
+    isFlushing.value = true;
+    try {
+      // Flush DNS cache
+      await Process.run('dscacheutil', ['-flushcache']);
+      // Restart mDNSResponder to fully clear DNS cache (requires admin privileges)
+      await Process.run('osascript', [
+        '-e',
+        'do shell script "killall -HUP mDNSResponder" with administrator privileges'
+      ]);
+      log('DNS cache flushed on macOS');
+    } catch (e) {
+      log('Error flushing DNS cache: $e');
+    }
+    isFlushing.value = false;
+  }
+
+  Future<String> _getMacOSNetworkService() async {
+    try {
+      final result =
+          await Process.run('networksetup', ['-listallnetworkservices']);
+      if (result.exitCode != 0) return 'Wi-Fi';
+
+      List<String> services = result.stdout.toString().split('\n');
+      for (String service in services.skip(1)) {
+        service = service.trim();
+        if (service.isEmpty || service.startsWith('*')) continue;
+
+        final ipResult =
+            await Process.run('networksetup', ['-getinfo', service]);
+        if (ipResult.stdout.toString().contains('IP address:') &&
+            !ipResult.stdout.toString().contains('IP address: none')) {
+          return service;
+        }
+      }
+      return 'Wi-Fi';
+    } catch (e) {
+      log('Error getting network service: $e');
+      return 'Wi-Fi';
+    }
+  }
+
+  Future<void> interfaceNameForMacOS() async {
+    try {
+      final result =
+          await Process.run('networksetup', ['-listallnetworkservices']);
+      if (result.exitCode == 0) {
+        List<String> services = result.stdout.toString().split('\n');
+        interfaces.clear();
+        interfaceKeys.clear();
+        interfaceValues.clear();
+
+        for (String service in services.skip(1)) {
+          service = service.trim();
+          if (service.isEmpty || service.startsWith('*')) continue;
+
+          final ipResult =
+              await Process.run('networksetup', ['-getinfo', service]);
+          bool isConnected =
+              ipResult.stdout.toString().contains('IP address:') &&
+                  !ipResult.stdout.toString().contains('IP address: none');
+
+          interfaces[service] = isConnected ? 'Connected' : 'Disconnected';
+          interfaceKeys.add(service);
+          interfaceValues.add(isConnected ? 'Connected' : 'Disconnected');
+        }
+
+        // Sort to put connected interfaces first
+        List<MapEntry<String, String>> sortedEntries =
+            interfaces.entries.toList()
+              ..sort((a, b) {
+                if (a.value == b.value) return 0;
+                return a.value == "Connected" ? -1 : 1;
+              });
+        interfaces.value = Map.fromEntries(sortedEntries);
+
+        // Auto-select first connected interface
+        if (interfaceName.value == 'Select Interface' &&
+            interfaceKeys.isNotEmpty) {
+          interfaceName.value = interfaceKeys.first;
+          saveInterfaceName();
+        }
+      }
+    } catch (e) {
+      log('Error getting macOS network services: $e');
+    }
+  }
+  // FOR MACOS END
+
   void addDNS(String dnsName, primaryDNS, secondaryDNS) {
     dnsListPersonal.add(
       DnsModel(
@@ -270,16 +437,15 @@ class NetshiftEngineController extends GetxController {
 
   void deleteDns(DnsModel dns) {
     dnsListPersonal.remove(dns);
-    if (selectedDns.value.name == dns.name) {
-      if (selectedDns.value.primaryDNS == dns.primaryDNS) {
-        if (selectedDns.value.secondaryDNS == dns.secondaryDNS) {
-          if (dnsListPersonal.isNotEmpty) {
-            selectedDns.value = dnsListPersonal.first;
-          } else if (dnsListPersonal.isEmpty) {
-            selectedDns.value = dnsListNetShift.first;
-          }
-        }
-      }
+
+    final isSelectedDns = selectedDns.value.name == dns.name &&
+        selectedDns.value.primaryDNS == dns.primaryDNS &&
+        selectedDns.value.secondaryDNS == dns.secondaryDNS;
+
+    if (isSelectedDns) {
+      selectedDns.value = dnsListPersonal.isNotEmpty
+          ? dnsListPersonal.first
+          : dnsListNetShift.first;
     }
     saveSelectedDnsValue();
   }

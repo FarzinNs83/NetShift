@@ -18,9 +18,12 @@ Future<void> main(List<String> arguments) async {
   WidgetsFlutterBinding.ensureInitialized();
   InitialBindings().dependencies();
 
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  // Only lock orientation on mobile platforms
+  if (Platform.isAndroid || Platform.isIOS) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  }
   await GetStorage.init();
-  
+
   // WINDOWS
   if (Platform.isWindows) {
     await windowManager.ensureInitialized();
@@ -37,7 +40,7 @@ Future<void> main(List<String> arguments) async {
     });
     await WindowsSingleInstance.ensureSingleInstance(
       arguments,
-     "Change this when you want to use this app",
+      "Change this when you want to use this app",
       // ignore: avoid_print
       onSecondWindow: (arguments) => print(arguments),
     );
@@ -47,7 +50,30 @@ Future<void> main(List<String> arguments) async {
       shortcutPolicy: ShortcutPolicy.requireCreate,
     );
   }
-SystemChromeController().setSystemUIOverlayStyle();
+
+  // MACOS
+  if (Platform.isMacOS) {
+    await windowManager.ensureInitialized();
+    WindowOptions windowOptions = const WindowOptions(
+      backgroundColor: Colors.transparent,
+      size: Size(1000, 700),
+      minimumSize: Size(800, 600),
+      center: true,
+      title: "NetShift",
+      titleBarStyle: TitleBarStyle.hidden,
+    );
+    await windowManager.waitUntilReadyToShow(windowOptions).then((_) async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+    await initTray();
+    await localNotifier.setup(
+      appName: "NetShift",
+      shortcutPolicy: ShortcutPolicy.requireCreate,
+    );
+  }
+
+  SystemChromeController().setSystemUIOverlayStyle();
   runApp(
     const MyApp(),
   );

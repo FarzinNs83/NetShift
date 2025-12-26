@@ -10,13 +10,13 @@ import 'package:netshift/controller/stop_watch_controller.dart';
 class InitialBindings extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut(() => SplashScreenController());
-    Get.lazyPut(() => NetshiftEngineController());
-    Get.lazyPut(() => CheckForUpdateController());
-    Get.lazyPut(() => ForegroundController());
-    Get.lazyPut(() => StopWatchController());
-    Get.lazyPut(() => GlowController());
-    Get.lazyPut(() => BlockedAppsController());
+    Get.lazyPut(() => SplashScreenController(), fenix: true);
+    Get.lazyPut(() => NetshiftEngineController(), fenix: true);
+    Get.lazyPut(() => CheckForUpdateController(), fenix: true);
+    Get.lazyPut(() => ForegroundController(), fenix: true);
+    Get.lazyPut(() => StopWatchController(), fenix: true);
+    Get.lazyPut(() => GlowController(), fenix: true);
+    Get.lazyPut(() => BlockedAppsController(), fenix: true);
   }
 }
 
