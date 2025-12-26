@@ -34,7 +34,7 @@ class SplashScreen extends StatelessWidget {
                   !splashController.isError.value) {
                 return Scaffold(
                   // WINDOWS
-                  appBar: Platform.isWindows
+                  appBar: Platform.isWindows || Platform.isLinux
                       ? const PreferredSize(
                           preferredSize: Size.fromHeight(60),
                           child: WindowsTitleBarBox(),
@@ -160,7 +160,7 @@ class SplashScreen extends StatelessWidget {
               } else if (splashController.isOffline.value) {
                 return Scaffold(
                   // WINDOWS
-                  appBar: Platform.isWindows
+                  appBar: Platform.isWindows || Platform.isLinux
                       ? const PreferredSize(
                           preferredSize: Size.fromHeight(60),
                           child: WindowsTitleBarBox(),
@@ -220,7 +220,7 @@ class SplashScreen extends StatelessWidget {
               } else if (splashController.isError.value) {
                 return Scaffold(
                   // WINDOWS
-                  appBar: Platform.isWindows
+                  appBar: Platform.isWindows || Platform.isLinux
                       ? const PreferredSize(
                           preferredSize: Size.fromHeight(60),
                           child: WindowsTitleBarBox(),

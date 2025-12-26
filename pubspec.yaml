@@ -27,7 +27,6 @@ dependencies:
   windows_single_instance: ^1.1.0
   window_manager: ^0.5.1
   local_notifier: ^0.1.6
-  blinking_border: ^1.2.1
   # jailbreak_root_detection: ^1.1.5
   
 dev_dependencies:

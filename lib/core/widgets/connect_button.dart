@@ -1,8 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
-import 'dart:math' as math;
 
-import 'package:blinking_border/blinking_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
@@ -97,18 +95,18 @@ class ConnectButton extends StatelessWidget {
                         "NetShift has successfully connected to the ${netshiftEngineController.selectedDns.value.name}.",
                     title: "Service Started",
                   ).showNotification();
-                } else if (Platform.isMacOS && isOn) {
-                  // FOR MACOS
-                  netshiftEngineController.stopDnsForMacOS();
+                } else if (Platform.isLinux && isOn) {
+                  // FOR LINUX
+                  netshiftEngineController.stopDnsForLinux();
                   stopWatchController.stopWatchTime();
                   WindowsLocalNotif(
                     body:
                         "NetShift has disconnected from the ${netshiftEngineController.selectedDns.value.name}.",
                     title: "Service Stopped",
                   ).showNotification();
-                } else if (Platform.isMacOS && !isOn) {
-                  // FOR MACOS
-                  netshiftEngineController.startDnsForMacOS();
+                } else if (Platform.isLinux && !isOn) {
+                  // FOR LINUX
+                  netshiftEngineController.startDnsForLinux();
                   stopWatchController.startWatchTime();
                   WindowsLocalNotif(
                     body:
@@ -119,12 +117,10 @@ class ConnectButton extends StatelessWidget {
               },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          height: math
-              .min(ScreenSize.width * 0.55, ScreenSize.height * 0.27)
-              .clamp(0, 200),
-          width: math
-              .min(ScreenSize.width * 0.55, ScreenSize.height * 0.27)
-              .clamp(0, 200),
+          height: ScreenSize.height * 0.25 > 200
+              ? 220
+              : ScreenSize.height * 0.27,
+          width: ScreenSize.width * 0.4 > 200 ? 200 : ScreenSize.width * 0.55,
           decoration: BoxDecoration(
             color: isOn
                 ? AppColors.connectButtonOn
@@ -140,39 +136,26 @@ class ConnectButton extends StatelessWidget {
               ),
             ],
           ),
-          child: isOn
-              ? _connectButtonBorder(isLoading)
-              : BlinkingBorder(
-                  blinkStyle: BlinkStyle.cornerSweep,
-                  color: AppColors.connectButtonOnShadow,
-                  strokeWidth: 3,
-                  duration: const Duration(seconds: 2),
-                  borderRadius: BorderRadius.circular(150),
-                  child: _connectButtonBorder(isLoading),
-                ),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return ScaleTransition(scale: animation, child: child);
+            },
+            child: isLoading
+                ? SpinKitWave(
+                    key: const ValueKey("loading"),
+                    color: AppColors.spinKit,
+                    size: 40,
+                  )
+                : Icon(
+                    Icons.power_settings_new_outlined,
+                    key: const ValueKey("icon"),
+                    size: 120,
+                    color: AppColors.powerIcon,
+                  ),
+          ),
         ),
       );
     });
-  }
-
-  Widget _connectButtonBorder(bool isLoading) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      transitionBuilder: (child, animation) {
-        return ScaleTransition(scale: animation, child: child);
-      },
-      child: isLoading
-          ? SpinKitWave(
-              key: const ValueKey("loading"),
-              color: AppColors.spinKit,
-              size: 40,
-            )
-          : Icon(
-              Icons.power_settings_new_outlined,
-              key: const ValueKey("icon"),
-              size: 120,
-              color: AppColors.powerIcon,
-            ),
-    );
   }
 }

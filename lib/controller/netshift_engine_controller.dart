@@ -10,8 +10,9 @@ import 'package:netshift/models/dns_model.dart';
 
 class NetshiftEngineController extends GetxController {
   static const platform = MethodChannel("com.netshift.dnschanger/netdns");
-  static const EventChannel statusChannel =
-      EventChannel("com.netshift.dnschanger/netdnsStatus");
+  static const EventChannel statusChannel = EventChannel(
+    "com.netshift.dnschanger/netdnsStatus",
+  );
   String dnsStatus = "none";
   GetStorage storage = GetStorage();
   GetStorage interfaceNameStore = GetStorage();
@@ -34,15 +35,18 @@ class NetshiftEngineController extends GetxController {
 
   var dnsListPersonal = [].obs;
 
-  List<DnsModel> get combinedListDns =>
-      [...dnsListNetShift, ...dnsListPersonal];
+  List<DnsModel> get combinedListDns => [
+    ...dnsListNetShift,
+    ...dnsListPersonal,
+  ];
   var selectedDns = DnsModel(
     name: 'NetShift DNS',
     primaryDNS: '178.22.122.100',
     secondaryDNS: '78.157.42.100',
   ).obs;
-  final BlockedAppsController blockedAppsController =
-      Get.put(BlockedAppsController());
+  final BlockedAppsController blockedAppsController = Get.put(
+    BlockedAppsController(),
+  );
   @override
   void onInit() {
     super.onInit();
@@ -57,8 +61,8 @@ class NetshiftEngineController extends GetxController {
       interfaceNameForWindows();
       loadInterfaceName();
     }
-    if (Platform.isMacOS) {
-      interfaceNameForMacOS();
+    if (Platform.isLinux) {
+      interfaceNameForLinux();
       loadInterfaceName();
     }
   }
@@ -112,47 +116,165 @@ class NetshiftEngineController extends GetxController {
     }
   }
 
+Future<void> startDnsForLinux() async {
+  isLoading.value = true;
+  isActive.value = true;
+  saveConnectButtonStatus();
+
+  try {
+    final connectionName = interfaces[interfaceName.value];
+    if (connectionName == null) {
+      throw Exception('No connection found for interface');
+    }
+
+    await Process.run(
+      'nmcli',
+      [
+        'con',
+        'mod',
+        connectionName,
+        'ipv4.ignore-auto-dns',
+        'yes',
+        'ipv4.dns',
+        '${selectedDns.value.primaryDNS} ${selectedDns.value.secondaryDNS}',
+      ],
+      runInShell: true,
+    );
+
+    await Process.run(
+      'nmcli',
+      ['con', 'down', connectionName],
+      runInShell: true,
+    );
+
+    await Process.run(
+      'nmcli',
+      ['con', 'up', connectionName],
+      runInShell: true,
+    );
+
+    log('DNS set for $connectionName');
+  } catch (e) {
+    log('Linux DNS error: $e');
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+
+Future<void> stopDnsForLinux() async {
+  isActive.value = false;
+  saveConnectButtonStatus();
+
+  final connectionName = interfaces[interfaceName.value];
+  if (connectionName == null) return;
+
+  await Process.run(
+    'nmcli',
+    [
+      'con',
+      'mod',
+      connectionName,
+      'ipv4.ignore-auto-dns',
+      'no',
+      'ipv4.dns',
+      '',
+    ],
+    runInShell: true,
+  );
+
+  await Process.run(
+    'nmcli',
+    ['con', 'down', connectionName],
+    runInShell: true,
+  );
+
+  await Process.run(
+    'nmcli',
+    ['con', 'up', connectionName],
+    runInShell: true,
+  );
+}
+
+
+  Future<void> flushDnsForLinux() async {
+    isFlushing.value = true;
+
+    final result = await Process.run('resolvectl', [
+      'flush-caches',
+    ], runInShell: true);
+
+    isFlushing.value = false;
+    log(result.stdout);
+  }
+
+Future<void> interfaceNameForLinux() async {
+  final result = await Process.run(
+    'nmcli',
+    ['-t', '-f', 'DEVICE,TYPE,STATE,CONNECTION', 'device'],
+    runInShell: true,
+  );
+
+  Map<String, String> map = {};
+
+  for (final line in result.stdout.toString().split('\n')) {
+    if (line.trim().isEmpty) continue;
+    final parts = line.split(':');
+    if (parts.length >= 4) {
+      final device = parts[0];     // enp3s0
+      final type = parts[1];       // ethernet / wifi
+      final state = parts[2];      // connected
+      final connection = parts[3]; // Wired connection 1
+
+      if (state == 'connected') {
+        map['$type ($device)'] = connection;
+      }
+    }
+  }
+
+  interfaces.value = map;
+  interfaceKeys.assignAll(map.keys);     // Ethernet (enp3s0)
+  interfaceValues.assignAll(map.values); // Wired connection 1
+}
+
+
   // FOR WINDOWS START
   Future<void> startDnsForWindows() async {
     isLoading.value = true;
     isActive.value = true;
     saveConnectButtonStatus();
     try {
-      final primaryDnsResult = await Process.run(
-        'netsh',
-        [
-          'interface',
-          'ipv4',
-          'set',
-          'dns',
-          'name="${interfaceName.value}"',
-          'static',
-          selectedDns.value.primaryDNS,
-          'primary'
-        ],
-      );
+      final primaryDnsResult = await Process.run('netsh', [
+        'interface',
+        'ipv4',
+        'set',
+        'dns',
+        'name="${interfaceName.value}"',
+        'static',
+        selectedDns.value.primaryDNS,
+        'primary',
+      ]);
 
       if (primaryDnsResult.exitCode != 0) {
         throw Exception(
-            'Error setting primary DNS: ${primaryDnsResult.stderr}');
+          'Error setting primary DNS: ${primaryDnsResult.stderr}',
+        );
       }
 
-      final secondaryDnsResult = await Process.run(
-        'netsh',
-        [
-          'interface',
-          'ipv4',
-          'add',
-          'dns',
-          'name="${interfaceName.value}"',
-          selectedDns.value.secondaryDNS,
-          'index=2'
-        ],
-      );
+      final secondaryDnsResult = await Process.run('netsh', [
+        'interface',
+        'ipv4',
+        'add',
+        'dns',
+        'name="${interfaceName.value}"',
+        selectedDns.value.secondaryDNS,
+        'index=2',
+      ]);
 
       if (secondaryDnsResult.exitCode != 0) {
         throw Exception(
-            'Error setting secondary DNS: ${secondaryDnsResult.stderr}');
+          'Error setting secondary DNS: ${secondaryDnsResult.stderr}',
+        );
       }
 
       log('DNS configured successfully.');
@@ -168,17 +290,14 @@ class NetshiftEngineController extends GetxController {
     saveConnectButtonStatus();
 
     try {
-      final resetDnsResult = await Process.run(
-        'netsh',
-        [
-          'interface',
-          'ipv4',
-          'set',
-          'dns',
-          'name="${interfaceName.value}"',
-          'source=dhcp',
-        ],
-      );
+      final resetDnsResult = await Process.run('netsh', [
+        'interface',
+        'ipv4',
+        'set',
+        'dns',
+        'name="${interfaceName.value}"',
+        'source=dhcp',
+      ]);
 
       if (resetDnsResult.exitCode != 0) {
         throw Exception('Error resetting DNS: ${resetDnsResult.stderr}');
@@ -192,8 +311,9 @@ class NetshiftEngineController extends GetxController {
 
   Future<void> flushDnsForWindows() async {
     isFlushing.value = true;
-    ProcessResult result =
-        await Process.run('ipconfig', ['/flushdns'], runInShell: true);
+    ProcessResult result = await Process.run('ipconfig', [
+      '/flushdns',
+    ], runInShell: true);
     isFlushing.value = false;
     log(result.stdout);
   }
@@ -208,9 +328,11 @@ class NetshiftEngineController extends GetxController {
   }
 
   Future<void> interfaceNameForWindows() async {
-    ProcessResult result = await Process.run(
-        'netsh', ['interface', 'show', 'interface'],
-        runInShell: true);
+    ProcessResult result = await Process.run('netsh', [
+      'interface',
+      'show',
+      'interface',
+    ], runInShell: true);
 
     String interfaceOutput = result.stdout;
     Map<String, String> allInterfaces = parseNetshOutput(interfaceOutput);
@@ -256,169 +378,6 @@ class NetshiftEngineController extends GetxController {
   }
 
   // FOR WINDOWS END
-
-  // FOR MACOS START
-  Future<void> startDnsForMacOS() async {
-    isLoading.value = true;
-    isActive.value = true;
-    saveConnectButtonStatus();
-    try {
-      // Get the active network service name
-      String networkService = interfaceName.value.contains('Select Interface')
-          ? await _getMacOSNetworkService()
-          : interfaceName.value;
-      if (networkService.isEmpty) {
-        log('No active network service found');
-        isLoading.value = false;
-        isActive.value = false;
-        return;
-      }
-
-      // Set DNS servers using osascript with administrator privileges
-      final result = await Process.run(
-        'osascript',
-        [
-          '-e',
-          'do shell script "networksetup -setdnsservers \'$networkService\' ${selectedDns.value.primaryDNS} ${selectedDns.value.secondaryDNS}" with administrator privileges'
-        ],
-      );
-
-      if (result.exitCode != 0) {
-        log('Error setting DNS: ${result.stderr}');
-        isActive.value = false;
-        saveConnectButtonStatus();
-      } else {
-        log('DNS configured successfully on $networkService');
-      }
-    } catch (e) {
-      log('Error configuring DNS: $e');
-      isActive.value = false;
-      saveConnectButtonStatus();
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  Future<void> stopDnsForMacOS() async {
-    isActive.value = false;
-    saveConnectButtonStatus();
-    try {
-      String networkService = interfaceName.value.contains('Select Interface')
-          ? await _getMacOSNetworkService()
-          : interfaceName.value;
-      if (networkService.isEmpty) {
-        log('No active network service found');
-        return;
-      }
-
-      // Reset DNS to empty (DHCP) using osascript with administrator privileges
-      final resetResult = await Process.run(
-        'osascript',
-        [
-          '-e',
-          'do shell script "networksetup -setdnsservers \'$networkService\' Empty" with administrator privileges'
-        ],
-      );
-
-      if (resetResult.exitCode != 0) {
-        log('Error resetting DNS: ${resetResult.stderr}');
-      } else {
-        log('DNS reset to default on $networkService');
-      }
-    } catch (e) {
-      log('Error disabling DNS: $e');
-    }
-  }
-
-  Future<void> flushDnsForMacOS() async {
-    isFlushing.value = true;
-    try {
-      // Flush DNS cache
-      await Process.run('dscacheutil', ['-flushcache']);
-      // Restart mDNSResponder to fully clear DNS cache (requires admin privileges)
-      await Process.run('osascript', [
-        '-e',
-        'do shell script "killall -HUP mDNSResponder" with administrator privileges'
-      ]);
-      log('DNS cache flushed on macOS');
-    } catch (e) {
-      log('Error flushing DNS cache: $e');
-    }
-    isFlushing.value = false;
-  }
-
-  Future<String> _getMacOSNetworkService() async {
-    try {
-      final result =
-          await Process.run('networksetup', ['-listallnetworkservices']);
-      if (result.exitCode != 0) return 'Wi-Fi';
-
-      List<String> services = result.stdout.toString().split('\n');
-      for (String service in services.skip(1)) {
-        service = service.trim();
-        if (service.isEmpty || service.startsWith('*')) continue;
-
-        final ipResult =
-            await Process.run('networksetup', ['-getinfo', service]);
-        if (ipResult.stdout.toString().contains('IP address:') &&
-            !ipResult.stdout.toString().contains('IP address: none')) {
-          return service;
-        }
-      }
-      return 'Wi-Fi';
-    } catch (e) {
-      log('Error getting network service: $e');
-      return 'Wi-Fi';
-    }
-  }
-
-  Future<void> interfaceNameForMacOS() async {
-    try {
-      final result =
-          await Process.run('networksetup', ['-listallnetworkservices']);
-      if (result.exitCode == 0) {
-        List<String> services = result.stdout.toString().split('\n');
-        interfaces.clear();
-        interfaceKeys.clear();
-        interfaceValues.clear();
-
-        for (String service in services.skip(1)) {
-          service = service.trim();
-          if (service.isEmpty || service.startsWith('*')) continue;
-
-          final ipResult =
-              await Process.run('networksetup', ['-getinfo', service]);
-          bool isConnected =
-              ipResult.stdout.toString().contains('IP address:') &&
-                  !ipResult.stdout.toString().contains('IP address: none');
-
-          interfaces[service] = isConnected ? 'Connected' : 'Disconnected';
-          interfaceKeys.add(service);
-          interfaceValues.add(isConnected ? 'Connected' : 'Disconnected');
-        }
-
-        // Sort to put connected interfaces first
-        List<MapEntry<String, String>> sortedEntries =
-            interfaces.entries.toList()
-              ..sort((a, b) {
-                if (a.value == b.value) return 0;
-                return a.value == "Connected" ? -1 : 1;
-              });
-        interfaces.value = Map.fromEntries(sortedEntries);
-
-        // Auto-select first connected interface
-        if (interfaceName.value == 'Select Interface' &&
-            interfaceKeys.isNotEmpty) {
-          interfaceName.value = interfaceKeys.first;
-          saveInterfaceName();
-        }
-      }
-    } catch (e) {
-      log('Error getting macOS network services: $e');
-    }
-  }
-  // FOR MACOS END
-
   void addDNS(String dnsName, primaryDNS, secondaryDNS) {
     dnsListPersonal.add(
       DnsModel(
@@ -437,21 +396,26 @@ class NetshiftEngineController extends GetxController {
 
   void deleteDns(DnsModel dns) {
     dnsListPersonal.remove(dns);
-
-    final isSelectedDns = selectedDns.value.name == dns.name &&
-        selectedDns.value.primaryDNS == dns.primaryDNS &&
-        selectedDns.value.secondaryDNS == dns.secondaryDNS;
-
-    if (isSelectedDns) {
-      selectedDns.value = dnsListPersonal.isNotEmpty
-          ? dnsListPersonal.first
-          : dnsListNetShift.first;
+    if (selectedDns.value.name == dns.name) {
+      if (selectedDns.value.primaryDNS == dns.primaryDNS) {
+        if (selectedDns.value.secondaryDNS == dns.secondaryDNS) {
+          if (dnsListPersonal.isNotEmpty) {
+            selectedDns.value = dnsListPersonal.first;
+          } else if (dnsListPersonal.isEmpty) {
+            selectedDns.value = dnsListNetShift.first;
+          }
+        }
+      }
     }
     saveSelectedDnsValue();
   }
 
-  void editDns(DnsModel oldDns, String newDnsName, String newPrimaryDNS,
-      String newSecondaryDNS) {
+  void editDns(
+    DnsModel oldDns,
+    String newDnsName,
+    String newPrimaryDNS,
+    String newSecondaryDNS,
+  ) {
     int index = dnsListPersonal.indexWhere(
       (dns) =>
           dns.name == oldDns.name &&
