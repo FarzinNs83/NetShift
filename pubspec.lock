@@ -57,6 +57,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.1.6"
+  blinking_border:
+    dependency: "direct main"
+    description:
+      name: blinking_border
+      sha256: "66caa58feea42abd83aecdf9c377e642112ab000242d8dd53fedaf0bca62497a"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.2.1"
   boolean_selector:
     dependency: transitive
     description:
