@@ -135,38 +135,44 @@ class ConnectButton extends StatelessWidget {
                 color: isOn
                     ? AppColors.connectButtonOnShadow
                     : AppColors.connectButtonOffShadow,
-                blurRadius: isOn ? 0 : 16,
-                spreadRadius: isOn ? 0 / 2 : 6,
+                blurRadius: isOn ? glowController.glowValue.value : 16,
+                spreadRadius: isOn ? glowController.glowValue.value / 2 : 6,
               ),
             ],
           ),
-          child: BlinkingBorder(
-            blinkStyle: isOn ? BlinkStyle.glowing : BlinkStyle.cornerSweep,
-            color: AppColors.connectButtonOnShadow,
-            strokeWidth: isOn ? 8 : 3,
-            duration: Duration(seconds: 2),
-            borderRadius: BorderRadius.circular(150),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return ScaleTransition(scale: animation, child: child);
-              },
-              child: isLoading
-                  ? SpinKitWave(
-                      key: const ValueKey("loading"),
-                      color: AppColors.spinKit,
-                      size: 40,
-                    )
-                  : Icon(
-                      Icons.power_settings_new_outlined,
-                      key: const ValueKey("icon"),
-                      size: 120,
-                      color: AppColors.powerIcon,
-                    ),
-            ),
-          ),
+          child: isOn
+              ? _connectButtonBorder(isLoading)
+              : BlinkingBorder(
+                  blinkStyle: BlinkStyle.cornerSweep,
+                  color: AppColors.connectButtonOnShadow,
+                  strokeWidth: 3,
+                  duration: const Duration(seconds: 2),
+                  borderRadius: BorderRadius.circular(150),
+                  child: _connectButtonBorder(isLoading),
+                ),
         ),
       );
     });
+  }
+
+  Widget _connectButtonBorder(bool isLoading) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      transitionBuilder: (child, animation) {
+        return ScaleTransition(scale: animation, child: child);
+      },
+      child: isLoading
+          ? SpinKitWave(
+              key: const ValueKey("loading"),
+              color: AppColors.spinKit,
+              size: 40,
+            )
+          : Icon(
+              Icons.power_settings_new_outlined,
+              key: const ValueKey("icon"),
+              size: 120,
+              color: AppColors.powerIcon,
+            ),
+    );
   }
 }
