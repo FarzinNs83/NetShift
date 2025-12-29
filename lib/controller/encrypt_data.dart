@@ -5,7 +5,7 @@
 // class EncryptionData {
 //   static final String keyString = generateRandomKey(32);
 //   static final encrypt.Key key = encrypt.Key.fromUtf8(keyString);
-//   static final encrypt.IV iv = encrypt.IV.fromLength(16); 
+//   static final encrypt.IV iv = encrypt.IV.fromLength(16);
 //   static final encrypt.Encrypter encrypter = encrypt.Encrypter(encrypt.AES(key));
 
 //   static String encryptData(String plainText) {

@@ -2,7 +2,7 @@
 
 import 'dart:convert';
 import 'dart:math';
-import 'package:dio/dio.dart';
+import 'package:dio/dio.dart' as dio_pkg;
 import 'package:get/get.dart';
 import 'package:netshift/controller/dio_config.dart';
 import 'package:netshift/core/services/url_constant.dart';
@@ -11,7 +11,7 @@ import 'package:netshift/models/dns_model.dart';
 
 class RandomDnsGeneratorController extends GetxController {
   final NetshiftEngineController netshiftEngineController = Get.find();
-  var generatedDnsList = <DnsModel>[];
+  List<DnsModel> generatedDnsList = <DnsModel>[];
   final Random random = Random();
   RxBool isGenerating = false.obs;
 
@@ -20,24 +20,28 @@ class RandomDnsGeneratorController extends GetxController {
     isGenerating.value = true;
 
     try {
-      final response =
-          await dio.get(UrlConstant.baseUrl + UrlConstant.ananas1);
+      final dio_pkg.Response<dynamic> response = await dio.get(
+        UrlConstant.baseUrl + UrlConstant.ananas1,
+      );
 
       if (response.statusCode == 200) {
         generatedDnsList.clear();
-        final String ananas4 = response.data['status'];
-        final int ananas5 = response.data['code'];
-        print("Generated DNS Status : $ananas4");
-        print("Generated DNS Code : ${ananas5.toString()}");
-        var ananas3 = jsonDecode(response.data['data']);
-        ananas3['validateDNS'].forEach((json) {
+        final String status = response.data['status'];
+        final int code = response.data['code'];
+        print("Generated DNS Status : $status");
+        print("Generated DNS Code : ${code.toString()}");
+        final Map<String, dynamic> validatedDnsData = jsonDecode(
+          response.data['data'],
+        );
+        validatedDnsData['validateDNS'].forEach((dynamic json) {
           generatedDnsList.add(DnsModel.fromJson(json));
         });
         //TODO Will add dnsCounter later
-        for (var dnsCount = 0; dnsCount < 1; dnsCount++) {
+        for (int dnsCount = 0; dnsCount < 1; dnsCount++) {
           if (generatedDnsList.isNotEmpty) {
-            netshiftEngineController.dnsListPersonal
-                .add(generatedDnsList[random.nextInt(generatedDnsList.length)]);
+            netshiftEngineController.dnsListPersonal.add(
+              generatedDnsList[random.nextInt(generatedDnsList.length)],
+            );
             netshiftEngineController.savePersonalDns();
             print("DNS Generated successfully");
           } else {
@@ -49,7 +53,7 @@ class RandomDnsGeneratorController extends GetxController {
       } else {
         print("Unexpected server response: ${response.statusCode}");
       }
-    } on DioException catch (e) {
+    } on dio_pkg.DioException catch (e) {
       print("Error generating DNS: ${e.message}");
     } finally {
       isGenerating.value = false;

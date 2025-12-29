@@ -7,7 +7,7 @@ import 'package:netshift/screens/home_page.dart';
 import 'package:netshift/screens/settings_page.dart';
 
 class MainWrapperController extends GetxController {
-  final netshiftEngineController =
+  final NetshiftEngineController netshiftEngineController =
       Get.find<NetshiftEngineController>();
   final List<Widget> _pages = [
     HomePage(),
@@ -20,7 +20,8 @@ class MainWrapperController extends GetxController {
     super.onInit();
     netshiftEngineController.getIpAddress();
   }
-  var selectedIndex = 0.obs;
+
+  RxInt selectedIndex = 0.obs;
 
   void onSelectPage(int index) {
     selectedIndex.value = index;

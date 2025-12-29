@@ -11,19 +11,19 @@ class SortedDnsPingController extends GetxController {
   RxBool isPinging = false.obs;
   RxMap<String, Map<String, String>> pingResultMap =
       <String, Map<String, String>>{}.obs;
-  RxList<String> ananas = <String>[].obs;
-  RxList<String> ananas1 = <String>[].obs;
-  RxList<String> ananas2 = <String>[].obs;
-  RxList<String> ananas3 = <String>[].obs;
-  RxList<String> ananas4 = <String>[].obs;
-  RxList<String> ananas5 = <String>[].obs;
+  RxList<String> dnsNames = <String>[].obs;
+  RxList<String> primaryDnsList = <String>[].obs;
+  RxList<String> secondaryDnsList = <String>[].obs;
+  RxList<String> avgPingList = <String>[].obs;
+  RxList<String> primaryPingList = <String>[].obs;
+  RxList<String> secondaryPingList = <String>[].obs;
   RxInt completedCount = 0.obs;
   RxInt totalCount = 0.obs;
 
   List<DnsModel> get combinedList => [
-        ...netshiftEngineController.dnsListNetShift,
-        ...netshiftEngineController.dnsListPersonal
-      ];
+    ...netshiftEngineController.dnsListNetShift,
+    ...netshiftEngineController.dnsListPersonal,
+  ];
 
   @override
   void onInit() {
@@ -37,8 +37,8 @@ class SortedDnsPingController extends GetxController {
     totalCount.value = combinedList.length;
 
     // Launch all pings in parallel
-    List<Future<void>> pingFutures = [];
-    for (var item in combinedList) {
+    List<Future<void>> pingFutures = <Future<void>>[];
+    for (DnsModel item in combinedList) {
       pingFutures.add(_pingDns(item));
     }
 
@@ -61,10 +61,9 @@ class SortedDnsPingController extends GetxController {
 
       int primaryPing = results[0];
       int secondaryPing = results[1];
-      int avgPing =
-          (primaryPing == -1 || secondaryPing == -1)
-              ? -1
-              : (primaryPing + secondaryPing) ~/ 2;
+      int avgPing = (primaryPing == -1 || secondaryPing == -1)
+          ? -1
+          : (primaryPing + secondaryPing) ~/ 2;
 
       pingResultMap[item.name] = {
         "ping": avgPing.toString(),
@@ -115,32 +114,35 @@ class SortedDnsPingController extends GetxController {
 
   void _sortAndUpdateLists() {
     // Sort by ping (fastest first, timeouts last)
-    var sortedEntries = pingResultMap.entries.toList()
-      ..sort((a, b) {
-        int pingA = int.parse(a.value['ping']!);
-        int pingB = int.parse(b.value['ping']!);
+    List<MapEntry<String, Map<String, String>>> sortedEntries =
+        pingResultMap.entries.toList()..sort((
+          MapEntry<String, Map<String, String>> a,
+          MapEntry<String, Map<String, String>> b,
+        ) {
+          int pingA = int.parse(a.value['ping']!);
+          int pingB = int.parse(b.value['ping']!);
 
-        if (pingA == -1 && pingB == -1) return 0;
-        if (pingA == -1) return 1;
-        if (pingB == -1) return -1;
-        return pingA.compareTo(pingB);
-      });
+          if (pingA == -1 && pingB == -1) return 0;
+          if (pingA == -1) return 1;
+          if (pingB == -1) return -1;
+          return pingA.compareTo(pingB);
+        });
 
     // Clear and rebuild display lists
-    ananas.clear();
-    ananas1.clear();
-    ananas2.clear();
-    ananas3.clear();
-    ananas4.clear();
-    ananas5.clear();
+    dnsNames.clear();
+    primaryDnsList.clear();
+    secondaryDnsList.clear();
+    avgPingList.clear();
+    primaryPingList.clear();
+    secondaryPingList.clear();
 
-    for (var entry in sortedEntries) {
-      ananas.add(entry.key);
-      ananas1.add(entry.value['primary']!);
-      ananas2.add(entry.value['secondary']!);
-      ananas3.add(entry.value['ping']!);
-      ananas4.add(entry.value['ping1']!);
-      ananas5.add(entry.value['ping2']!);
+    for (MapEntry<String, Map<String, String>> entry in sortedEntries) {
+      dnsNames.add(entry.key);
+      primaryDnsList.add(entry.value['primary']!);
+      secondaryDnsList.add(entry.value['secondary']!);
+      avgPingList.add(entry.value['ping']!);
+      primaryPingList.add(entry.value['ping1']!);
+      secondaryPingList.add(entry.value['ping2']!);
     }
 
     // Force UI update
@@ -149,12 +151,12 @@ class SortedDnsPingController extends GetxController {
 
   Future<void> refreshDnsPingResults() async {
     pingResultMap.clear();
-    ananas.clear();
-    ananas1.clear();
-    ananas2.clear();
-    ananas3.clear();
-    ananas4.clear();
-    ananas5.clear();
+    dnsNames.clear();
+    primaryDnsList.clear();
+    secondaryDnsList.clear();
+    avgPingList.clear();
+    primaryPingList.clear();
+    secondaryPingList.clear();
     await sortedPing();
   }
 }

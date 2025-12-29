@@ -138,8 +138,9 @@ class AppColors {
   static Color get interfaceClose =>
       isDarkMode ? Colors.greenAccent : Colors.indigo;
 
-  static Color get interfaceCloseHover =>
-      isDarkMode ? Colors.greenAccent.withValues(alpha: 0.3) : Colors.indigo.withValues(alpha: 0.3);
+  static Color get interfaceCloseHover => isDarkMode
+      ? Colors.greenAccent.withValues(alpha: 0.3)
+      : Colors.indigo.withValues(alpha: 0.3);
 
   // ------------------ DNS PAGE COLORS ------------------
 
@@ -265,10 +266,8 @@ class AppColors {
       isDarkMode ? Colors.black : Colors.indigo;
 
   static Color
-      get dnsSelectorSheetPersonalCancelDeleteDnsElevatedButtonShadow =>
-          isDarkMode
-              ? Colors.greenAccent.withValues(alpha: 0.4)
-              : Colors.indigo;
+  get dnsSelectorSheetPersonalCancelDeleteDnsElevatedButtonShadow =>
+      isDarkMode ? Colors.greenAccent.withValues(alpha: 0.4) : Colors.indigo;
 
   static Color get dnsSelectionContainerCopySnackBarText =>
       isDarkMode ? Colors.white : Colors.indigo;
@@ -287,8 +286,8 @@ class AppColors {
 
   static Color get dnsSelectionCustomFloatingAddDnsActionButtonBackground =>
       isDarkMode
-          ? const Color(0xFF1E2025)
-          : const Color.fromARGB(255, 196, 180, 221);
+      ? const Color(0xFF1E2025)
+      : const Color.fromARGB(255, 196, 180, 221);
 
   static Color get dnsSelectionCustomButton =>
       isDarkMode ? const Color(0xFF16725C) : Colors.indigo;
@@ -535,11 +534,7 @@ class GradientAppColors {
 
   static LinearGradient get mainWrapperBottomNavContainer => isDarkMode
       ? const LinearGradient(
-          colors: [
-            Color(0xFF1A6B57),
-            Color(0xFF1BA87D),
-            Color(0xFF196856),
-          ],
+          colors: [Color(0xFF1A6B57), Color(0xFF1BA87D), Color(0xFF196856)],
           begin: AlignmentDirectional.topStart,
           end: AlignmentDirectional.bottomEnd,
         )

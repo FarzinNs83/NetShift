@@ -8,13 +8,14 @@ class DnsModel {
     required this.primaryDNS,
     required this.secondaryDNS,
   });
-    Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'name': name,
       'primaryDNS': primaryDNS,
       'secondaryDNS': secondaryDNS,
     };
   }
+
   factory DnsModel.fromJson(Map<String, dynamic> json) {
     return DnsModel(
       name: json['name'],

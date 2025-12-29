@@ -3,6 +3,7 @@ import 'package:netshift/controller/blocked_apps_controller.dart';
 import 'package:netshift/controller/check_for_update_controller.dart';
 import 'package:netshift/controller/foreground_controller.dart';
 import 'package:netshift/controller/glow_controller.dart';
+import 'package:netshift/controller/main_wrapper_controller.dart';
 import 'package:netshift/controller/netshift_engine_controller.dart';
 import 'package:netshift/controller/splash_controller.dart';
 import 'package:netshift/controller/stop_watch_controller.dart';
@@ -17,6 +18,6 @@ class InitialBindings extends Bindings {
     Get.lazyPut(() => StopWatchController(), fenix: true);
     Get.lazyPut(() => GlowController(), fenix: true);
     Get.lazyPut(() => BlockedAppsController(), fenix: true);
+    Get.lazyPut(() => MainWrapperController(), fenix: true);
   }
 }
-

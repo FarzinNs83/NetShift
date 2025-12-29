@@ -7,14 +7,8 @@ Future<void> initTray() async {
   await TrayManager.instance.setIcon(Assets.png.tray);
 
   List<MenuItem> items = [
-    MenuItem(
-      key: 'show',
-      label: 'Show App',
-    ),
-    MenuItem(
-      key: 'exit',
-      label: 'Exit',
-    ),
+    MenuItem(key: 'show', label: 'Show App'),
+    MenuItem(key: 'exit', label: 'Exit'),
   ];
 
   await TrayManager.instance.setContextMenu(Menu(items: items));

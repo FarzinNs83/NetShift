@@ -28,7 +28,9 @@ class CheckForUpdateController extends GetxController {
           log("No update available");
           updateIsAvailable.value = false;
         } else {
-          log("Update available version: ${updateVersion.value} with status code ${response.statusCode}");
+          log(
+            "Update available version: ${updateVersion.value} with status code ${response.statusCode}",
+          );
           updateIsAvailable.value = true;
         }
       } else {
@@ -55,7 +57,9 @@ class CheckForUpdateController extends GetxController {
           log("No update available");
           updateIsAvailable.value = false;
         } else {
-          log("Update available version: ${updateVersion.value} with status code ${response.statusCode}");
+          log(
+            "Update available version: ${updateVersion.value} with status code ${response.statusCode}",
+          );
           updateIsAvailable.value = true;
         }
       } else {
@@ -82,7 +86,9 @@ class CheckForUpdateController extends GetxController {
           log("No update available");
           updateIsAvailable.value = false;
         } else {
-          log("Update available version: ${updateVersion.value} with status code ${response.statusCode}");
+          log(
+            "Update available version: ${updateVersion.value} with status code ${response.statusCode}",
+          );
           updateIsAvailable.value = true;
         }
       } else {

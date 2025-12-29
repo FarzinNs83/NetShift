@@ -5,9 +5,9 @@ import 'package:installed_apps/app_info.dart';
 import 'package:installed_apps/installed_apps.dart';
 
 class BlockedAppsController extends GetxController {
-  GetStorage box2 = GetStorage();
-  var blockedApps = <String>[].obs;
-  var apps = <AppInfo>[].obs;
+  final GetStorage box2 = GetStorage();
+  RxList<String> blockedApps = <String>[].obs;
+  RxList<AppInfo> apps = <AppInfo>[].obs;
   RxBool isSystemApp = false.obs;
   @override
   void onInit() {

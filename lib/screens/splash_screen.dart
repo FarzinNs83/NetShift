@@ -10,9 +10,9 @@ import 'package:netshift/controller/splash_controller.dart';
 import 'package:netshift/core/resources/app_colors.dart';
 import 'package:netshift/core/services/windows_local_notif.dart';
 import 'package:netshift/core/services/windows_title_bar_box.dart';
-import 'package:netshift/core/widgets/check_for_update_widget.dart';
-import 'package:netshift/core/widgets/double_tap_to_exit.dart';
-import 'package:netshift/core/widgets/flutter_toast.dart';
+import 'package:netshift/core/widgets/settings/check_for_update_widget.dart';
+import 'package:netshift/core/widgets/common/double_tap_to_exit.dart';
+import 'package:netshift/core/widgets/common/flutter_toast.dart';
 
 class SplashScreen extends StatelessWidget {
   SplashScreen({super.key});
@@ -306,8 +306,9 @@ class SplashScreen extends StatelessWidget {
                                       color: Color.fromARGB(255, 255, 235, 58),
                                       width: 2,
                                     ),
-                                    backgroundColor:
-                                        Colors.black.withValues(alpha: 0.3),
+                                    backgroundColor: Colors.black.withValues(
+                                      alpha: 0.3,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
                                     ),
@@ -315,14 +316,13 @@ class SplashScreen extends StatelessWidget {
                                   onPressed: () {
                                     if (Platform.isAndroid) {
                                       FlutterToast(
-                                              message:
-                                                  "Starting in Offline Mode")
-                                          .flutterToast();
+                                        message: "Starting in Offline Mode",
+                                      ).flutterToast();
                                     } else if (Platform.isWindows) {
                                       WindowsLocalNotif(
-                                              body: "Starting in Offline Mode",
-                                              title: "NetShift Service")
-                                          .showNotification();
+                                        body: "Starting in Offline Mode",
+                                        title: "NetShift Service",
+                                      ).showNotification();
                                     }
                                     splashController.online.remove('online');
                                     splashController.getDnsListOffline();
@@ -336,7 +336,7 @@ class SplashScreen extends StatelessWidget {
                                   ),
                                 ),
                               ],
-                            )
+                            ),
                           ],
                         ),
                       ),

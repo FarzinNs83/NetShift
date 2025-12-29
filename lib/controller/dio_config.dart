@@ -11,4 +11,3 @@ void configureDio() {
   log("Connect timeout: ${dio.options.connectTimeout!.inSeconds} Seconds");
   log("Receive timeout: ${dio.options.receiveTimeout!.inSeconds} Seconds");
 }
-

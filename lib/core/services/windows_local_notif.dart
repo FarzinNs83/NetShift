@@ -3,10 +3,7 @@ import 'package:local_notifier/local_notifier.dart';
 class WindowsLocalNotif {
   final String title;
   final String body;
-  WindowsLocalNotif({
-    required this.body,
-    required this.title,
-  });
+  WindowsLocalNotif({required this.body, required this.title});
   void showNotification() {
     final notification = LocalNotification(
       title: title,

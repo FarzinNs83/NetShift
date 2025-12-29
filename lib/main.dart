@@ -74,9 +74,7 @@ Future<void> main(List<String> arguments) async {
   }
 
   SystemChromeController().setSystemUIOverlayStyle();
-  runApp(
-    const MyApp(),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -88,13 +86,17 @@ class MyApp extends StatelessWidget {
     ScreenSize().init(context);
     return GetMaterialApp(
       theme: ThemeData(
-          scrollbarTheme: ScrollbarThemeData(
-        thumbColor: WidgetStateProperty.all(ananas.isDarkMode
-            ? Colors.greenAccent.withValues(alpha: 0.6)
-            : Colors.indigo.withValues(alpha: 0.6)),
-        trackColor: WidgetStateProperty.all(
-            ananas.isDarkMode ? Colors.black : Colors.grey),
-      )),
+        scrollbarTheme: ScrollbarThemeData(
+          thumbColor: WidgetStateProperty.all(
+            ananas.isDarkMode
+                ? Colors.greenAccent.withValues(alpha: 0.6)
+                : Colors.indigo.withValues(alpha: 0.6),
+          ),
+          trackColor: WidgetStateProperty.all(
+            ananas.isDarkMode ? Colors.black : Colors.grey,
+          ),
+        ),
+      ),
       initialBinding: InitialBindings(),
       debugShowCheckedModeBanner: false,
       home: SplashScreen(),

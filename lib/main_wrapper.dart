@@ -8,9 +8,9 @@ import 'package:netshift/core/resources/app_colors.dart';
 import 'package:netshift/core/services/platform_service.dart';
 import 'package:netshift/core/services/windows_title_bar_box.dart';
 import 'package:netshift/core/services/macos_title_bar_box.dart';
-import 'package:netshift/core/widgets/desktop_sidebar.dart';
-import 'package:netshift/core/widgets/double_tap_to_exit.dart';
-import 'package:netshift/core/widgets/nav_bar.dart';
+import 'package:netshift/core/widgets/desktop/desktop_sidebar.dart';
+import 'package:netshift/core/widgets/common/double_tap_to_exit.dart';
+import 'package:netshift/core/widgets/common/nav_bar.dart';
 
 class MainWrapper extends StatelessWidget {
   MainWrapper({super.key});
@@ -21,8 +21,8 @@ class MainWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Use desktop layout for macOS and Windows on larger screens
-    final isDesktopLayout = PlatformService.isDesktop &&
-        MediaQuery.of(context).size.width >= 800;
+    final isDesktopLayout =
+        PlatformService.isDesktop && MediaQuery.of(context).size.width >= 800;
 
     if (isDesktopLayout) {
       return _buildDesktopLayout(context);
@@ -84,9 +84,7 @@ class MainWrapper extends StatelessWidget {
               )
             : null,
         backgroundColor: AppColors.mainWrapperBackground,
-        body: Obx(
-          () => mainWrapperController.selectedPage,
-        ),
+        body: Obx(() => mainWrapperController.selectedPage),
         bottomNavigationBar: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(14),
@@ -104,7 +102,7 @@ class MainWrapper extends StatelessWidget {
                     blurRadius: 15,
                     offset: const Offset(0, 4),
                     spreadRadius: 5,
-                  )
+                  ),
                 ],
               ),
               child: BottomAppBar(

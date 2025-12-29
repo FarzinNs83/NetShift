@@ -20,11 +20,7 @@ class WindowsTitleBarBox extends StatelessWidget {
                 child: Row(
                   children: [
                     const SizedBox(width: 10),
-                    Image.asset(
-                      Assets.png.tray,
-                      width: 16,
-                      height: 16,
-                    ),
+                    Image.asset(Assets.png.tray, width: 16, height: 16),
                     const SizedBox(width: 8),
                     const Text(
                       'NetShift',
@@ -39,12 +35,7 @@ class WindowsTitleBarBox extends StatelessWidget {
                 ),
               ),
             ),
-            const Row(
-              children: [
-                MinimizeWindowButton(),
-                CloseWindowButton(),
-              ],
-            ),
+            const Row(children: [MinimizeWindowButton(), CloseWindowButton()]),
           ],
         ),
       ),
@@ -77,9 +68,9 @@ class CloseWindowButton extends StatelessWidget {
       onPressed: () {
         appWindow.hide();
         WindowsLocalNotif(
-                body: "NetShift is running in the background",
-                title: "Minimized to Tray")
-            .showNotification();
+          body: "NetShift is running in the background",
+          title: "Minimized to Tray",
+        ).showNotification();
       },
       tooltip: 'Close',
     );

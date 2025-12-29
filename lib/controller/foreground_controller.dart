@@ -10,16 +10,18 @@ import 'package:netshift/controller/stop_watch_controller.dart';
 class ForegroundController extends GetxController {
   static const platform = MethodChannel("com.netshift.dnschanger/netdns");
   RxBool isRunning = false.obs;
-  static const EventChannel statusChannel =
-      EventChannel("com.netshift.dnschanger/netdnsStatus");
+  static const EventChannel statusChannel = EventChannel(
+    "com.netshift.dnschanger/netdnsStatus",
+  );
   String foregroundStatus = "none";
   RxString download = "0.00 MB".obs;
   RxString upload = "0.00 MB".obs;
   RxBool serviceStatus = false.obs;
   StreamSubscription? dataUsageSubscription;
   final status = GetStorage();
-  NetshiftEngineController netshiftEngineController =
-      Get.put(NetshiftEngineController());
+  NetshiftEngineController netshiftEngineController = Get.put(
+    NetshiftEngineController(),
+  );
   StopWatchController stopWatchController = Get.put(StopWatchController());
   Future<void> startService(String contextText) async {
     log("Foreground Service Started");
@@ -31,7 +33,6 @@ class ForegroundController extends GetxController {
       log("Service Failed to Start $e");
     }
   }
-
 
   Future<void> stopService() async {
     isRunning.value = false;
@@ -47,21 +48,19 @@ class ForegroundController extends GetxController {
   }
 
   void listenToServiceStatus() {
-    platform.setMethodCallHandler(
-      (call) async {
-        if (call.method == "serviceStatusUpdate") {
-          serviceStatus.value = call.arguments as bool;
-          log("Service status updated: ${serviceStatus.value}");
-          loadServiceStatus();
-        } else if (call.method == 'dataUsageUpdate') {
-          final Map<dynamic, dynamic> data = call.arguments;
-          download.value =
-              "${(data['download'] / (1024 * 1024)).toStringAsFixed(2)} MB";
-          upload.value =
-              "${(data['upload'] / (1024 * 1024)).toStringAsFixed(2)} MB";
-        }
-      },
-    );
+    platform.setMethodCallHandler((call) async {
+      if (call.method == "serviceStatusUpdate") {
+        serviceStatus.value = call.arguments as bool;
+        log("Service status updated: ${serviceStatus.value}");
+        loadServiceStatus();
+      } else if (call.method == 'dataUsageUpdate') {
+        final Map<dynamic, dynamic> data = call.arguments;
+        download.value =
+            "${(data['download'] / (1024 * 1024)).toStringAsFixed(2)} MB";
+        upload.value =
+            "${(data['upload'] / (1024 * 1024)).toStringAsFixed(2)} MB";
+      }
+    });
   }
 
   Future<bool> serviceStatusKotlin() async {
@@ -78,7 +77,9 @@ class ForegroundController extends GetxController {
     serviceStatus.value = await serviceStatusKotlin();
     loadServiceStatus();
     log("****Service Status ananas : ${serviceStatus.value}****");
-    log("****Service Status ananas1 : ${netshiftEngineController.isActive.value}****");
+    log(
+      "****Service Status ananas1 : ${netshiftEngineController.isActive.value}****",
+    );
   }
 
   void loadServiceStatus() {

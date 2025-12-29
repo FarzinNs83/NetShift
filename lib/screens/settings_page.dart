@@ -9,11 +9,13 @@ import 'package:netshift/controller/netshift_engine_controller.dart';
 import 'package:netshift/controller/theme_controller.dart';
 import 'package:netshift/core/resources/app_colors.dart';
 import 'package:netshift/screens/blocked_apps_screen.dart';
-import 'package:netshift/core/widgets/app_bar.dart';
-import 'package:netshift/core/widgets/custom_snack_bar.dart';
-import 'package:netshift/core/widgets/other_apps_widgets.dart';
-import 'package:netshift/core/widgets/settings_custom_card.dart';
-import 'package:netshift/core/widgets/support_content.dart';
+import 'package:netshift/core/widgets/common/app_bar.dart';
+import 'package:netshift/core/widgets/common/custom_snack_bar.dart';
+import 'package:netshift/core/widgets/desktop/desktop_settings_card.dart';
+import 'package:netshift/core/widgets/settings/other_apps_widgets.dart';
+import 'package:netshift/core/widgets/settings/settings_custom_card.dart';
+import 'package:netshift/core/widgets/settings/settings_section.dart';
+import 'package:netshift/core/widgets/settings/support_content.dart';
 
 class SettingsPage extends StatelessWidget {
   SettingsPage({super.key});
@@ -23,8 +25,8 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = PlatformService.isDesktop &&
-        MediaQuery.of(context).size.width >= 800;
+    final isDesktop =
+        PlatformService.isDesktop && MediaQuery.of(context).size.width >= 800;
 
     return Scaffold(
       appBar: isDesktop
@@ -48,7 +50,6 @@ class SettingsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             Text(
               "Settings",
               style: TextStyle(
@@ -68,16 +69,14 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            // Settings Grid
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Left Column - General Settings
                 Expanded(
-                  child: _buildSettingsSection(
+                  child: SettingsSection(
                     title: "General",
                     children: [
-                      _buildDesktopSettingsCard(
+                      DesktopSettingsCard(
                         icon: themeController.isDarkMode
                             ? Icons.dark_mode
                             : Icons.light_mode,
@@ -95,7 +94,7 @@ class SettingsPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _buildDesktopSettingsCard(
+                      DesktopSettingsCard(
                         icon: Icons.apps_rounded,
                         title: "Other Apps",
                         subtitle: "Explore our other applications",
@@ -105,25 +104,24 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 32),
-                // Right Column - About
                 Expanded(
-                  child: _buildSettingsSection(
+                  child: SettingsSection(
                     title: "About",
                     children: [
-                      _buildDesktopSettingsCard(
+                      DesktopSettingsCard(
                         icon: Icons.info_outline,
                         title: "App Version",
                         subtitle: _getVersionString(),
                       ),
                       const SizedBox(height: 16),
-                      _buildDesktopSettingsCard(
+                      DesktopSettingsCard(
                         icon: Icons.contact_support_outlined,
                         title: "Support",
                         subtitle: "Get help and contact us",
                         onTap: () => _showSupport(context),
                       ),
                       const SizedBox(height: 16),
-                      _buildDesktopSettingsCard(
+                      DesktopSettingsCard(
                         icon: Icons.code,
                         title: "Platform",
                         subtitle: _getPlatformString(),
@@ -134,142 +132,6 @@ class SettingsPage extends StatelessWidget {
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSettingsSection({
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.isDarkMode
-            ? const Color(0xFF1E2025)
-            : Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.isDarkMode
-                ? Colors.black.withValues(alpha: 0.2)
-                : Colors.indigo.withValues(alpha: 0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 4,
-                height: 20,
-                decoration: BoxDecoration(
-                  color:
-                      AppColors.isDarkMode ? Colors.greenAccent : Colors.indigo,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.settingsGeneralCategory,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDesktopSettingsCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    Widget? trailing,
-    VoidCallback? onTap,
-  }) {
-    return MouseRegion(
-      cursor:
-          onTap != null ? SystemMouseCursors.click : SystemMouseCursors.basic,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.isDarkMode
-                ? const Color(0xFF262626)
-                : const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.isDarkMode
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : Colors.indigo.withValues(alpha: 0.1),
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.isDarkMode
-                      ? Colors.greenAccent.withValues(alpha: 0.1)
-                      : Colors.indigo.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  icon,
-                  color: AppColors.settingsIconColors,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.settingsCustomCardTitle,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 12,
-                        color: AppColors.settingsCustomCardSubTitle,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (trailing != null) trailing,
-              if (onTap != null && trailing == null)
-                Icon(
-                  Icons.chevron_right,
-                  color: AppColors.isDarkMode
-                      ? Colors.greenAccent.withValues(alpha: 0.5)
-                      : Colors.indigo.withValues(alpha: 0.5),
-                ),
-            ],
-          ),
         ),
       ),
     );
@@ -331,8 +193,7 @@ class SettingsPage extends StatelessWidget {
                           title: "Operation Failed",
                           message:
                               "Failed to OPEN, please stop the service first",
-                          backColor:
-                              Colors.red.shade700.withValues(alpha: 0.9),
+                          backColor: Colors.red.shade700.withValues(alpha: 0.9),
                           iconColor: Colors.white,
                           icon: Icons.error_outline,
                           textColor: Colors.white,
@@ -421,15 +282,10 @@ class SettingsPage extends StatelessWidget {
         return Container(
           width: double.infinity,
           height: ScreenSize.height * 0.2,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12.0,
-            vertical: 15.0,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 15.0),
           decoration: BoxDecoration(
             color: AppColors.settingsCustomCardBackground,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(24),
-            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: const OtherAppsWidget(),
         );
@@ -451,15 +307,10 @@ class SettingsPage extends StatelessWidget {
         return Container(
           width: double.infinity,
           height: ScreenSize.height * 0.2,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12.0,
-            vertical: 15.0,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 15.0),
           decoration: BoxDecoration(
             color: AppColors.settingsCustomCardBackground,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(24),
-            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: const SupportContent(),
         );

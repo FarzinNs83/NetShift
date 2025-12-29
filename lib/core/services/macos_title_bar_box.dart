@@ -21,11 +21,7 @@ class MacOSTitleBarBox extends StatelessWidget {
               onPanStart: (_) => windowManager.startDragging(),
               child: Row(
                 children: [
-                  Image.asset(
-                    Assets.png.tray,
-                    width: 16,
-                    height: 16,
-                  ),
+                  Image.asset(Assets.png.tray, width: 16, height: 16),
                   const SizedBox(width: 8),
                   const Text(
                     'NetShift',

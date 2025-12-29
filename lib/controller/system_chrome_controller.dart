@@ -10,11 +10,15 @@ class SystemChromeController {
         statusBarColor: themeController.isDarkMode
             ? const Color(0xFF1A1B21)
             : const Color.fromARGB(255, 231, 218, 250),
-        statusBarIconBrightness:
-            themeController.isDarkMode ? Brightness.light : Brightness.dark,
-        statusBarBrightness: themeController.isDarkMode ? Brightness.dark : Brightness.light,
-        systemNavigationBarIconBrightness:
-            themeController.isDarkMode ? Brightness.light : Brightness.dark,
+        statusBarIconBrightness: themeController.isDarkMode
+            ? Brightness.light
+            : Brightness.dark,
+        statusBarBrightness: themeController.isDarkMode
+            ? Brightness.dark
+            : Brightness.light,
+        systemNavigationBarIconBrightness: themeController.isDarkMode
+            ? Brightness.light
+            : Brightness.dark,
       ),
     );
   }

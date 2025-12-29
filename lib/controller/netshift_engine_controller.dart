@@ -1,444 +1,188 @@
-import 'dart:developer';
 import 'dart:io';
-import 'package:flutter/services.dart';
 
 import 'package:get/get.dart';
-import 'package:get_ip_address/get_ip_address.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:netshift/controller/blocked_apps_controller.dart';
+import 'package:netshift/core/services/dns_platform_service.dart';
+import 'package:netshift/core/services/dns_storage_service.dart';
+import 'package:netshift/core/services/ip_address_service.dart';
 import 'package:netshift/models/dns_model.dart';
 
 class NetshiftEngineController extends GetxController {
-  static const platform = MethodChannel("com.netshift.dnschanger/netdns");
-  static const EventChannel statusChannel =
-      EventChannel("com.netshift.dnschanger/netdnsStatus");
-  String dnsStatus = "none";
-  GetStorage storage = GetStorage();
-  GetStorage interfaceNameStore = GetStorage();
-  GetStorage dnsListPersonalStorage = GetStorage();
+  late final DnsPlatformService _platformService;
+  final DnsStorageService _storageService = DnsStorageService();
+  final IpAddressService _ipAddressService = IpAddressService();
+
+  // Connection state
   RxBool isActive = false.obs;
   RxBool isLoading = false.obs;
   RxBool isFetching = false.obs;
   RxBool isPermissionGiven = false.obs;
-  RxList<DnsModel> newDnsList = RxList();
-  RxMap<String, String> interfaces = RxMap();
-  RxList<String> interfaceKeys = RxList();
-  RxList<String> interfaceValues = RxList();
-  RxString interfaceName = 'Select Interface'.obs;
   RxBool isFlushing = false.obs;
   RxBool isIpAddress = false.obs;
 
-  RxString ipAddressString = "".obs;
+  // DNS lists
+  RxList<DnsModel> dnsListNetShift = <DnsModel>[].obs;
+  RxList<DnsModel> dnsListPersonal = <DnsModel>[].obs;
+  RxList<DnsModel> newDnsList = RxList();
 
-  var dnsListNetShift = [].obs;
+  List<DnsModel> get combinedListDns => [
+    ...dnsListNetShift,
+    ...dnsListPersonal,
+  ];
 
-  var dnsListPersonal = [].obs;
-
-  List<DnsModel> get combinedListDns =>
-      [...dnsListNetShift, ...dnsListPersonal];
-  var selectedDns = DnsModel(
+  // Selected DNS
+  Rx<DnsModel> selectedDns = DnsModel(
     name: 'NetShift DNS',
     primaryDNS: '178.22.122.100',
     secondaryDNS: '78.157.42.100',
   ).obs;
+
+  // Network interfaces (for Windows/macOS)
+  RxMap<String, String> interfaces = RxMap();
+  RxList<String> interfaceKeys = RxList();
+  RxList<String> interfaceValues = RxList();
+  RxString interfaceName = 'Select Interface'.obs;
+
+  // IP address
+  RxString ipAddressString = "".obs;
+
+  // Dependencies
   final BlockedAppsController blockedAppsController =
-      Get.put(BlockedAppsController());
+      Get.find<BlockedAppsController>();
+
   @override
   void onInit() {
     super.onInit();
+    _initializePlatformService();
+    _loadSavedState();
+  }
+
+  void _initializePlatformService() {
+    _platformService = DnsPlatformService.create();
+
     if (Platform.isAndroid) {
-      prepareDns();
+      _prepareAndroidDns();
     }
-    loadConnectButtonStatus();
-    loadSelectedDnsValue();
-    loadPersonalDns();
-    loadPrepareService();
-    if (Platform.isWindows) {
-      interfaceNameForWindows();
-      loadInterfaceName();
-    }
-    if (Platform.isMacOS) {
-      interfaceNameForMacOS();
-      loadInterfaceName();
+
+    if (_platformService.requiresInterfaceSelection) {
+      _loadNetworkInterfaces();
     }
   }
 
-  Future<void> prepareDns() async {
+  void _loadSavedState() {
+    isActive.value = _storageService.loadConnectionStatus();
+    isPermissionGiven.value = _storageService.loadPrepareDnsPermission();
+    interfaceName.value = _storageService.loadInterfaceName();
+
+    final DnsModel? savedDns = _storageService.loadSelectedDns();
+    if (savedDns != null) {
+      selectedDns.value = savedDns;
+    }
+
+    dnsListPersonal.value = _storageService.loadPersonalDnsList();
+  }
+
+  Future<void> _prepareAndroidDns() async {
     isPermissionGiven.value = false;
-    try {
-      await platform.invokeMethod('prepareDns');
-      isPermissionGiven.value = true;
-      savePrepareService();
-    } on PlatformException catch (e) {
-      log("Service Failed to Start $e");
+    bool success = await _platformService.prepareDns();
+    isPermissionGiven.value = success;
+    if (success) {
+      _storageService.savePrepareDnsPermission(true);
     }
   }
 
-  void savePrepareService() {
-    storage.write('prepareDns', isPermissionGiven.value);
-  }
+  Future<void> _loadNetworkInterfaces() async {
+    Map<String, String> networkInterfaces =
+        await _platformService.getNetworkInterfaces();
 
-  void loadPrepareService() {
-    isPermissionGiven.value = storage.read('prepareDns') ?? false;
-  }
+    interfaces.value = networkInterfaces;
+    interfaceKeys.value = networkInterfaces.keys.toList();
+    interfaceValues.value = networkInterfaces.values.toList();
 
-  Future<void> startDnsForAndroid() async {
-    if (isPermissionGiven.value) {
-      prepareDns();
+    // Auto-select first connected interface if none selected
+    if (interfaceName.value == 'Select Interface' && interfaceKeys.isNotEmpty) {
+      interfaceName.value = interfaceKeys.first;
+      saveInterfaceName();
     }
+  }
+
+  // DNS Control Methods
+  Future<void> startDns() async {
+    if (Platform.isAndroid && !isPermissionGiven.value) {
+      await _prepareAndroidDns();
+    }
+
     isLoading.value = true;
     isActive.value = true;
-    saveConnectButtonStatus();
-    try {
-      await platform.invokeMethod('startDns', {
-        'dns1': selectedDns.value.primaryDNS,
-        'dns2': selectedDns.value.secondaryDNS,
-        'disallowedApps': blockedAppsController.blockedApps.toList(),
-      });
-      await Future.delayed(const Duration(seconds: 1));
-      isLoading.value = false;
-    } on PlatformException catch (e) {
-      log("Service Failed to Start $e");
-    }
-  }
+    _storageService.saveConnectionStatus(true);
 
-  Future<void> stopDnsForAndroid() async {
-    isActive.value = false;
-    saveConnectButtonStatus();
     try {
-      await platform.invokeMethod('stopDns');
-    } on PlatformException catch (e) {
-      log("Service Failed to Start $e");
-    }
-  }
-
-  // FOR WINDOWS START
-  Future<void> startDnsForWindows() async {
-    isLoading.value = true;
-    isActive.value = true;
-    saveConnectButtonStatus();
-    try {
-      final primaryDnsResult = await Process.run(
-        'netsh',
-        [
-          'interface',
-          'ipv4',
-          'set',
-          'dns',
-          'name="${interfaceName.value}"',
-          'static',
-          selectedDns.value.primaryDNS,
-          'primary'
-        ],
+      await _platformService.startDns(
+        primaryDns: selectedDns.value.primaryDNS,
+        secondaryDns: selectedDns.value.secondaryDNS,
+        interfaceName: interfaceName.value,
+        disallowedApps: blockedAppsController.blockedApps.toList(),
       );
 
-      if (primaryDnsResult.exitCode != 0) {
-        throw Exception(
-            'Error setting primary DNS: ${primaryDnsResult.stderr}');
-      }
-
-      final secondaryDnsResult = await Process.run(
-        'netsh',
-        [
-          'interface',
-          'ipv4',
-          'add',
-          'dns',
-          'name="${interfaceName.value}"',
-          selectedDns.value.secondaryDNS,
-          'index=2'
-        ],
-      );
-
-      if (secondaryDnsResult.exitCode != 0) {
-        throw Exception(
-            'Error setting secondary DNS: ${secondaryDnsResult.stderr}');
-      }
-
-      log('DNS configured successfully.');
-    } catch (e) {
-      log('Error configuring DNS: $e');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  Future<void> stopDnsForWindows() async {
-    isActive.value = false;
-    saveConnectButtonStatus();
-
-    try {
-      final resetDnsResult = await Process.run(
-        'netsh',
-        [
-          'interface',
-          'ipv4',
-          'set',
-          'dns',
-          'name="${interfaceName.value}"',
-          'source=dhcp',
-        ],
-      );
-
-      if (resetDnsResult.exitCode != 0) {
-        throw Exception('Error resetting DNS: ${resetDnsResult.stderr}');
-      }
-
-      log('DNS reset to default.');
-    } catch (e) {
-      log('Error disabling DNS: $e');
-    }
-  }
-
-  Future<void> flushDnsForWindows() async {
-    isFlushing.value = true;
-    ProcessResult result =
-        await Process.run('ipconfig', ['/flushdns'], runInShell: true);
-    isFlushing.value = false;
-    log(result.stdout);
-  }
-
-  void saveInterfaceName() {
-    interfaceNameStore.write('interfaceNameStore', interfaceName.value);
-  }
-
-  void loadInterfaceName() {
-    interfaceName.value =
-        storage.read('interfaceNameStore') ?? 'Select Interface';
-  }
-
-  Future<void> interfaceNameForWindows() async {
-    ProcessResult result = await Process.run(
-        'netsh', ['interface', 'show', 'interface'],
-        runInShell: true);
-
-    String interfaceOutput = result.stdout;
-    Map<String, String> allInterfaces = parseNetshOutput(interfaceOutput);
-    interfaces.value = allInterfaces;
-    interfaceKeys.addAll(interfaces.keys);
-    interfaceValues.addAll(interfaces.values);
-  }
-
-  Map<String, String> parseNetshOutput(String output) {
-    Map<String, String> interfaceMap = {};
-    List<String> lines = output.split('\n');
-
-    int nameIndex = -1;
-    int stateIndex = -1;
-
-    for (String line in lines) {
-      line = line.trim();
-      if (line.toLowerCase().contains("admin state")) {
-        List<String> headers = line.split(RegExp(r'\s{2,}'));
-        nameIndex = headers.indexOf("Interface Name");
-        stateIndex = headers.indexOf("State");
-        continue;
-      }
-
-      if (nameIndex != -1 && stateIndex != -1) {
-        List<String> parts = line.split(RegExp(r'\s{2,}'));
-        if (parts.length > stateIndex) {
-          String name = parts[nameIndex].trim();
-          String state = parts[stateIndex].trim();
-
-          interfaceMap[name] = state;
-        }
-      }
-    }
-
-    List<MapEntry<String, String>> sortedEntries = interfaceMap.entries.toList()
-      ..sort((a, b) {
-        if (a.value == b.value) return 0;
-        return a.value == "Connected" ? -1 : 1;
-      });
-
-    return Map.fromEntries(sortedEntries);
-  }
-
-  // FOR WINDOWS END
-
-  // FOR MACOS START
-  Future<void> startDnsForMacOS() async {
-    isLoading.value = true;
-    isActive.value = true;
-    saveConnectButtonStatus();
-    try {
-      // Get the active network service name
-      String networkService = interfaceName.value.contains('Select Interface')
-          ? await _getMacOSNetworkService()
-          : interfaceName.value;
-      if (networkService.isEmpty) {
-        log('No active network service found');
-        isLoading.value = false;
-        isActive.value = false;
-        return;
-      }
-
-      // Set DNS servers using osascript with administrator privileges
-      final result = await Process.run(
-        'osascript',
-        [
-          '-e',
-          'do shell script "networksetup -setdnsservers \'$networkService\' ${selectedDns.value.primaryDNS} ${selectedDns.value.secondaryDNS}" with administrator privileges'
-        ],
-      );
-
-      if (result.exitCode != 0) {
-        log('Error setting DNS: ${result.stderr}');
-        isActive.value = false;
-        saveConnectButtonStatus();
-      } else {
-        log('DNS configured successfully on $networkService');
+      if (Platform.isAndroid) {
+        await Future.delayed(const Duration(seconds: 1));
       }
     } catch (e) {
-      log('Error configuring DNS: $e');
       isActive.value = false;
-      saveConnectButtonStatus();
+      _storageService.saveConnectionStatus(false);
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> stopDnsForMacOS() async {
+  Future<void> stopDns() async {
     isActive.value = false;
-    saveConnectButtonStatus();
+    _storageService.saveConnectionStatus(false);
+
     try {
-      String networkService = interfaceName.value.contains('Select Interface')
-          ? await _getMacOSNetworkService()
-          : interfaceName.value;
-      if (networkService.isEmpty) {
-        log('No active network service found');
-        return;
-      }
-
-      // Reset DNS to empty (DHCP) using osascript with administrator privileges
-      final resetResult = await Process.run(
-        'osascript',
-        [
-          '-e',
-          'do shell script "networksetup -setdnsservers \'$networkService\' Empty" with administrator privileges'
-        ],
-      );
-
-      if (resetResult.exitCode != 0) {
-        log('Error resetting DNS: ${resetResult.stderr}');
-      } else {
-        log('DNS reset to default on $networkService');
-      }
+      await _platformService.stopDns(interfaceName: interfaceName.value);
     } catch (e) {
-      log('Error disabling DNS: $e');
+      // Error already logged in service
     }
   }
 
-  Future<void> flushDnsForMacOS() async {
+  Future<void> flushDns() async {
     isFlushing.value = true;
     try {
-      // Flush DNS cache
-      await Process.run('dscacheutil', ['-flushcache']);
-      // Restart mDNSResponder to fully clear DNS cache (requires admin privileges)
-      await Process.run('osascript', [
-        '-e',
-        'do shell script "killall -HUP mDNSResponder" with administrator privileges'
-      ]);
-      log('DNS cache flushed on macOS');
-    } catch (e) {
-      log('Error flushing DNS cache: $e');
-    }
-    isFlushing.value = false;
-  }
-
-  Future<String> _getMacOSNetworkService() async {
-    try {
-      final result =
-          await Process.run('networksetup', ['-listallnetworkservices']);
-      if (result.exitCode != 0) return 'Wi-Fi';
-
-      List<String> services = result.stdout.toString().split('\n');
-      for (String service in services.skip(1)) {
-        service = service.trim();
-        if (service.isEmpty || service.startsWith('*')) continue;
-
-        final ipResult =
-            await Process.run('networksetup', ['-getinfo', service]);
-        if (ipResult.stdout.toString().contains('IP address:') &&
-            !ipResult.stdout.toString().contains('IP address: none')) {
-          return service;
-        }
-      }
-      return 'Wi-Fi';
-    } catch (e) {
-      log('Error getting network service: $e');
-      return 'Wi-Fi';
+      await _platformService.flushDns();
+    } finally {
+      isFlushing.value = false;
     }
   }
 
-  Future<void> interfaceNameForMacOS() async {
-    try {
-      final result =
-          await Process.run('networksetup', ['-listallnetworkservices']);
-      if (result.exitCode == 0) {
-        List<String> services = result.stdout.toString().split('\n');
-        interfaces.clear();
-        interfaceKeys.clear();
-        interfaceValues.clear();
-
-        for (String service in services.skip(1)) {
-          service = service.trim();
-          if (service.isEmpty || service.startsWith('*')) continue;
-
-          final ipResult =
-              await Process.run('networksetup', ['-getinfo', service]);
-          bool isConnected =
-              ipResult.stdout.toString().contains('IP address:') &&
-                  !ipResult.stdout.toString().contains('IP address: none');
-
-          interfaces[service] = isConnected ? 'Connected' : 'Disconnected';
-          interfaceKeys.add(service);
-          interfaceValues.add(isConnected ? 'Connected' : 'Disconnected');
-        }
-
-        // Sort to put connected interfaces first
-        List<MapEntry<String, String>> sortedEntries =
-            interfaces.entries.toList()
-              ..sort((a, b) {
-                if (a.value == b.value) return 0;
-                return a.value == "Connected" ? -1 : 1;
-              });
-        interfaces.value = Map.fromEntries(sortedEntries);
-
-        // Auto-select first connected interface
-        if (interfaceName.value == 'Select Interface' &&
-            interfaceKeys.isNotEmpty) {
-          interfaceName.value = interfaceKeys.first;
-          saveInterfaceName();
-        }
-      }
-    } catch (e) {
-      log('Error getting macOS network services: $e');
-    }
+  // Interface management
+  void saveInterfaceName() {
+    _storageService.saveInterfaceName(interfaceName.value);
   }
-  // FOR MACOS END
 
-  void addDNS(String dnsName, primaryDNS, secondaryDNS) {
-    dnsListPersonal.add(
-      DnsModel(
-        name: dnsName,
-        primaryDNS: primaryDNS,
-        secondaryDNS: secondaryDNS,
-      ),
-    );
-    selectedDns.value = DnsModel(
+  Future<void> refreshNetworkInterfaces() async {
+    await _loadNetworkInterfaces();
+  }
+
+  // DNS List Management
+  void addDNS(String dnsName, String primaryDNS, String secondaryDNS) {
+    DnsModel newDns = DnsModel(
       name: dnsName,
       primaryDNS: primaryDNS,
       secondaryDNS: secondaryDNS,
     );
-    saveSelectedDnsValue();
+
+    dnsListPersonal.add(newDns);
+    selectedDns.value = newDns;
+
+    _savePersonalDnsAndSelection();
   }
 
   void deleteDns(DnsModel dns) {
     dnsListPersonal.remove(dns);
 
-    final isSelectedDns = selectedDns.value.name == dns.name &&
+    bool isSelectedDns =
+        selectedDns.value.name == dns.name &&
         selectedDns.value.primaryDNS == dns.primaryDNS &&
         selectedDns.value.secondaryDNS == dns.secondaryDNS;
 
@@ -447,17 +191,23 @@ class NetshiftEngineController extends GetxController {
           ? dnsListPersonal.first
           : dnsListNetShift.first;
     }
-    saveSelectedDnsValue();
+
+    _savePersonalDnsAndSelection();
   }
 
-  void editDns(DnsModel oldDns, String newDnsName, String newPrimaryDNS,
-      String newSecondaryDNS) {
+  void editDns(
+    DnsModel oldDns,
+    String newDnsName,
+    String newPrimaryDNS,
+    String newSecondaryDNS,
+  ) {
     int index = dnsListPersonal.indexWhere(
-      (dns) =>
+      (DnsModel dns) =>
           dns.name == oldDns.name &&
           dns.primaryDNS == oldDns.primaryDNS &&
           dns.secondaryDNS == oldDns.secondaryDNS,
     );
+
     if (index != -1) {
       dnsListPersonal[index] = DnsModel(
         name: newDnsName,
@@ -465,6 +215,7 @@ class NetshiftEngineController extends GetxController {
         secondaryDNS: newSecondaryDNS,
       );
     }
+
     if (selectedDns.value.name == oldDns.name &&
         selectedDns.value.primaryDNS == oldDns.primaryDNS &&
         selectedDns.value.secondaryDNS == oldDns.secondaryDNS) {
@@ -475,64 +226,42 @@ class NetshiftEngineController extends GetxController {
       );
     }
 
-    saveSelectedDnsValue();
+    _savePersonalDnsAndSelection();
   }
 
-  void saveConnectButtonStatus() {
-    storage.write('connectionButtonStatus', isActive.value);
-  }
-
-  void loadConnectButtonStatus() {
-    isActive.value = storage.read('connectionButtonStatus') ?? false;
-    log("Your connection button state is : ${isActive.value.toString()}");
+  void _savePersonalDnsAndSelection() {
+    _storageService.savePersonalDnsList(dnsListPersonal);
+    _storageService.saveSelectedDns(selectedDns.value);
   }
 
   void saveSelectedDnsValue() {
-    storage.write('selectedDnsValue', selectedDns.value.toJson());
-  }
-
-  void loadSelectedDnsValue() {
-    var dnsData = storage.read('selectedDnsValue');
-    if (dnsData != null) {
-      selectedDns.value = DnsModel.fromJson(dnsData);
-    }
-    log("Your selected DNS is : ${selectedDns.value.name}");
+    _storageService.saveSelectedDns(selectedDns.value);
   }
 
   void savePersonalDns() {
-    dnsListPersonalStorage.write(
-      'dnsListPersonal',
-      dnsListPersonal.map((dns) => dns.toJson()).toList(),
-    );
+    _storageService.savePersonalDnsList(dnsListPersonal);
   }
 
-  void loadPersonalDns() {
-    var dnsData = dnsListPersonalStorage.read('dnsListPersonal');
-    if (dnsData != null) {
-      dnsListPersonal.value = (dnsData as List)
-          .map((item) => DnsModel.fromJson(Map<String, String>.from(item)))
-          .toList();
-    }
+  // IP Address
+  Future<void> getIpAddress() async {
+    isIpAddress.value = true;
+
+    IpAddressResult result = await _ipAddressService.getIpAddress();
+    ipAddressString.value = result.ipAddress;
+
+    isIpAddress.value = false;
   }
 
-  void getIpAddress() async {
-    try {
-      isIpAddress.value = true;
-      var ipAddress = IpAddress(type: RequestType.text);
-      dynamic data = await ipAddress.getIpAddress();
-      bool isIPv6 = data.contains(':');
-      if (isIPv6) {
-        ipAddressString.value = "Failed(IPv6)";
-        log("Failed IPv6 detected");
-      } else {
-        ipAddressString.value = data;
-        log(data.toString());
-      }
-      isIpAddress.value = false;
-    } on IpAddressException catch (e) {
-      log(e.message);
-      ipAddressString.value = "Failed(Offline)";
-      isIpAddress.value = false;
-    }
-  }
+  // Legacy method names for backward compatibility
+  Future<void> startDnsForAndroid() => startDns();
+  Future<void> stopDnsForAndroid() => stopDns();
+  Future<void> startDnsForWindows() => startDns();
+  Future<void> stopDnsForWindows() => stopDns();
+  Future<void> startDnsForMacOS() => startDns();
+  Future<void> stopDnsForMacOS() => stopDns();
+  Future<void> flushDnsForWindows() => flushDns();
+  Future<void> flushDnsForMacOS() => flushDns();
+  Future<void> prepareDns() => _prepareAndroidDns();
+  Future<void> interfaceNameForWindows() => _loadNetworkInterfaces();
+  Future<void> interfaceNameForMacOS() => _loadNetworkInterfaces();
 }

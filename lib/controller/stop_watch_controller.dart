@@ -4,29 +4,28 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 class StopWatchController extends GetxController {
-  final timerBox = GetStorage();
+  final GetStorage timerBox = GetStorage();
   Timer? timer;
   DateTime? startTime;
-  var elapsedTime = Duration.zero.obs;
-  var isRunning = false.obs;
+  Rx<Duration> elapsedTime = Duration.zero.obs;
+  RxBool isRunning = false.obs;
 
   @override
   void onInit() {
     super.onInit();
     loadSavedTime();
   }
+
   @override
   void onClose() {
     timer?.cancel();
     super.onClose();
   }
+
   void startTimer() {
-    timer = Timer.periodic(
-      const Duration(seconds: 1),
-      (timer) {
-        elapsedTime.value = DateTime.now().difference(startTime!);
-      },
-    );
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      elapsedTime.value = DateTime.now().difference(startTime!);
+    });
   }
 
   void startWatchTime() {
@@ -62,6 +61,4 @@ class StopWatchController extends GetxController {
     final seconds = twoDigits(duration.inSeconds.remainder(60));
     return '$hours:$minutes:$seconds';
   }
-
-
 }

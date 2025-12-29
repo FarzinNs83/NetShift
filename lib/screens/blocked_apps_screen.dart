@@ -47,33 +47,32 @@ class BlockedAppsScreen extends StatelessWidget {
                     },
                     child: Row(
                       children: [
-                        Obx(
-                          () {
-                            return Checkbox(
-                              value: blockedAppsController.isSystemApp.value,
-                              onChanged: (value) {
-                                blockedAppsController.isSystemApp.value =
-                                    value!;
-                                blockedAppsController.apps.clear();
-                                blockedAppsController.installedApps();
-                                blockedAppsController.saveSystemAppState();
-                                Navigator.pop(context);
-                              },
-                            );
-                          },
-                        ),
+                        Obx(() {
+                          return Checkbox(
+                            value: blockedAppsController.isSystemApp.value,
+                            onChanged: (value) {
+                              blockedAppsController.isSystemApp.value = value!;
+                              blockedAppsController.apps.clear();
+                              blockedAppsController.installedApps();
+                              blockedAppsController.saveSystemAppState();
+                              Navigator.pop(context);
+                            },
+                          );
+                        }),
                         Text(
                           'System Apps',
                           style: TextStyle(
-                              color: AppColors.blockedAppBar, fontSize: 14),
+                            color: AppColors.blockedAppBar,
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                )
+                ),
               ];
             },
-          )
+          ),
         ],
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
@@ -82,10 +81,7 @@ class BlockedAppsScreen extends StatelessWidget {
       body: Obx(() {
         if (blockedAppsController.apps.isEmpty) {
           return Center(
-            child: SpinKitFoldingCube(
-              color: AppColors.spinKitColor,
-              size: 48,
-            ),
+            child: SpinKitFoldingCube(color: AppColors.spinKitColor, size: 48),
           );
         }
         return ListView.builder(
@@ -96,10 +92,12 @@ class BlockedAppsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: GestureDetector(
                 onTap: () {
-                  if (blockedAppsController.blockedApps
-                      .contains(appList.packageName)) {
-                    blockedAppsController.blockedApps
-                        .remove(appList.packageName);
+                  if (blockedAppsController.blockedApps.contains(
+                    appList.packageName,
+                  )) {
+                    blockedAppsController.blockedApps.remove(
+                      appList.packageName,
+                    );
                     blockedAppsController.saveBlockedAppsList();
                     log("App Removed ${appList.packageName}");
                   } else {
@@ -111,19 +109,17 @@ class BlockedAppsScreen extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                      color: AppColors.blockedAppContainer,
-                      border: Border.all(
-                        color: AppColors.blockedAppContainerBorder,
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(12)),
+                    color: AppColors.blockedAppContainer,
+                    border: Border.all(
+                      color: AppColors.blockedAppContainerBorder,
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: Row(
                     children: [
                       appList.icon != null && appList.icon!.isNotEmpty
-                          ? Image.memory(
-                              appList.icon!,
-                              height: 32,
-                            )
+                          ? Image.memory(appList.icon!, height: 32)
                           : const Icon(
                               Icons.android,
                               color: Colors.greenAccent,
@@ -147,8 +143,9 @@ class BlockedAppsScreen extends StatelessWidget {
                             Text(
                               appList.packageName,
                               style: TextStyle(
-                                color: AppColors.blockedAppAppName
-                                    .withValues(alpha: 0.7),
+                                color: AppColors.blockedAppAppName.withValues(
+                                  alpha: 0.7,
+                                ),
                                 fontSize: 12,
                                 fontFamily: 'Poppins',
                               ),
@@ -159,32 +156,34 @@ class BlockedAppsScreen extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      Obx(
-                        () {
-                          return Checkbox(
-                            side: const BorderSide(
-                                color: Colors.black, width: 1.5),
-                            checkColor: Colors.black,
-                            activeColor:
-                                const Color.fromARGB(190, 105, 240, 127),
-                            value: blockedAppsController.blockedApps
-                                .contains(appList.packageName),
-                            onChanged: (value) {
-                              if (value == true) {
-                                blockedAppsController.blockedApps
-                                    .add(appList.packageName);
-                                blockedAppsController.saveBlockedAppsList();
-                                log("App Added ${appList.packageName}");
-                              } else {
-                                blockedAppsController.blockedApps
-                                    .remove(appList.packageName);
-                                blockedAppsController.saveBlockedAppsList();
-                                log("App Removed ${appList.packageName}");
-                              }
-                            },
-                          );
-                        },
-                      )
+                      Obx(() {
+                        return Checkbox(
+                          side: const BorderSide(
+                            color: Colors.black,
+                            width: 1.5,
+                          ),
+                          checkColor: Colors.black,
+                          activeColor: const Color.fromARGB(190, 105, 240, 127),
+                          value: blockedAppsController.blockedApps.contains(
+                            appList.packageName,
+                          ),
+                          onChanged: (value) {
+                            if (value == true) {
+                              blockedAppsController.blockedApps.add(
+                                appList.packageName,
+                              );
+                              blockedAppsController.saveBlockedAppsList();
+                              log("App Added ${appList.packageName}");
+                            } else {
+                              blockedAppsController.blockedApps.remove(
+                                appList.packageName,
+                              );
+                              blockedAppsController.saveBlockedAppsList();
+                              log("App Removed ${appList.packageName}");
+                            }
+                          },
+                        );
+                      }),
                     ],
                   ),
                 ),
