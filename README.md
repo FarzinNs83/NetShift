@@ -106,7 +106,7 @@ Need help or have any questions? We're here to assist:
 
 - **Email**: [farzinns83@gmail.com](mailto:farzinns83@gmail.com)
 - **Telegram**: [Feri](https://t.me/feri_ns83)
-- **Community Channel**: [Flutter Stuff](https://t.me/flutterstuff)
+- **Community Channel**: [Farzin Tech Experience](https://t.me/farzin_the_tech_guy)
 
 ---
 
